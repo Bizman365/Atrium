@@ -1,8 +1,0 @@
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd ../.. && bun install && bun run --filter @atrium/database db:generate && bun run --filter @atrium/web build",
-  "outputDirectory": "apps/web/.next",
-  "installCommand": "echo 'install handled in buildCommand'",
-  "framework": "nextjs",
-  "regions": ["iad1"]
-}
