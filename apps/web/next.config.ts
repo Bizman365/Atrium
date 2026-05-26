@@ -11,7 +11,9 @@ if (existsSync(changelogSrc)) {
 }
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // output: "standalone" removed for Vercel deployment (used by Docker self-host)
+  // Re-enable for Docker builds: process.env.DOCKER_BUILD === "true"
+  ...(process.env.DOCKER_BUILD === "true" ? { output: "standalone" as const } : {}),
   transpilePackages: ["@atrium/shared"],
   images: {
     unoptimized: true, // CVE-2026-27980: disable image optimization (not used in this app)
