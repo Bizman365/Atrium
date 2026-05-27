@@ -107,7 +107,7 @@ function SetupWizardContent() {
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">Welcome to Atrium</h1>
+        <h1 className="text-2xl font-bold">Welcome to Pexlo Portal</h1>
         <p className="text-[var(--muted-foreground)] mt-1">
           Let&apos;s get your client portal set up in a few quick steps.
         </p>

@@ -10,7 +10,7 @@ export default function BillingPage(): React.ReactElement {
   if (!billingEnabled) {
     return (
       <p className="text-sm text-[var(--muted-foreground)]">
-        Billing is not configured on this Atrium instance.
+        Billing is not configured on this Pexlo Portal instance.
       </p>
     );
   }

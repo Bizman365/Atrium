@@ -139,7 +139,7 @@ export function GeneralSection(): React.ReactElement {
             <h2 className="text-base font-semibold">Email</h2>
           </div>
           <p className="text-sm text-[var(--muted-foreground)]">
-            Configure how Atrium sends emails (invitations, password resets, etc.)
+            Configure how the portal sends emails (invitations, password resets, etc.)
           </p>
 
           <div className="space-y-2">
@@ -308,7 +308,7 @@ export function GeneralSection(): React.ReactElement {
             <h2 className="text-base font-semibold">Error Reporting</h2>
           </div>
           <p className="text-sm text-[var(--muted-foreground)]">
-            Share anonymous crash reports and error data with the Atrium team to help fix bugs and improve the product. No personal data or client information is ever included.
+            Share anonymous crash reports and error data with the Atrium open-source team to help fix bugs and improve the product. No personal data or client information is ever included.
           </p>
           <label className="flex items-center gap-3 cursor-pointer">
             <input

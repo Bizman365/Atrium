@@ -12,8 +12,19 @@ function latestChangelogVersion(): string {
 }
 
 export const metadata: Metadata = {
-  title: "Atrium",
-  description: "Client portal for agencies and freelancers",
+  title: {
+    default: "Pexlo Portal",
+    template: "%s · Pexlo Portal",
+  },
+  description: "Pexlo client portal — projects, deliverables, billing, and documents in one place.",
+  applicationName: "Pexlo Portal",
+  authors: [{ name: "Pexlo" }],
+  openGraph: {
+    title: "Pexlo Portal",
+    siteName: "Pexlo Portal",
+    description: "Pexlo client portal — projects, deliverables, billing, and documents in one place.",
+    type: "website",
+  },
 };
 
 const ALLOWED_TRACKER_KEYS = new Set([

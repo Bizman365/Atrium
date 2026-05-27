@@ -163,7 +163,7 @@ export default async function DashboardLayout({
           ) : (
             /* No custom logo: fall back to org name as text */
             <span className="font-bold text-lg leading-none truncate">
-              {orgName || "Atrium"}
+              {orgName || "Pexlo Portal"}
             </span>
           )}
           <div className="ml-auto flex items-center gap-1">

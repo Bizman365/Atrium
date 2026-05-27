@@ -92,7 +92,7 @@ export default async function PortalLayout({
               /* eslint-disable-next-line @next/next/no-img-element */
               <img src={logoSrc} alt={orgName || ""} className="h-10 w-auto object-contain shrink-0" />
             ) : (
-              <span className="font-semibold">{orgName || "Atrium"}</span>
+              <span className="font-semibold">{orgName || "Pexlo Portal"}</span>
             )}
             <div className="flex-1" />
             <Link

@@ -55,7 +55,7 @@ export function MobileNav({ logoSrc, orgName, hideLogo }: MobileNavProps) {
           />
         ) : (
           <span className="font-bold text-sm truncate">
-            {orgName || "Atrium"}
+            {orgName || "Pexlo Portal"}
           </span>
         )}
         <div className="ml-auto flex items-center gap-1">
@@ -89,7 +89,7 @@ export function MobileNav({ logoSrc, orgName, hideLogo }: MobileNavProps) {
               />
             ) : (
               <span className="font-bold text-lg leading-none truncate">
-                {orgName || "Atrium"}
+                {orgName || "Pexlo Portal"}
               </span>
             )}
           </div>
