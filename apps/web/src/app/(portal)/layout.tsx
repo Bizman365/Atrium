@@ -88,12 +88,13 @@ export default async function PortalLayout({
           <PreviewBanner />
           <header className="border-b border-[var(--border)] px-6 py-4 flex items-center gap-3">
             {!branding?.hideLogo && logoSrc ? (
-              /* Custom logo: show full wordmark, no duplicate text */
+              /* Custom logo: full wordmark, left-aligned, naturally sized */
               /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={logoSrc} alt={orgName || ""} className="h-10 object-contain flex-1" />
+              <img src={logoSrc} alt={orgName || ""} className="h-10 w-auto object-contain shrink-0" />
             ) : (
-              <span className="font-semibold flex-1">{orgName || "Atrium"}</span>
+              <span className="font-semibold">{orgName || "Atrium"}</span>
             )}
+            <div className="flex-1" />
             <Link
               href="/portal"
               className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
