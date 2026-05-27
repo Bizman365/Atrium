@@ -152,17 +152,20 @@ export default async function DashboardLayout({
       {/* Desktop sidebar - hidden on mobile */}
       <aside className="hidden md:flex w-64 border-r border-[var(--border)] p-4 flex-col">
         <div className="flex items-center gap-2.5 mb-6">
-          {!branding?.hideLogo && (
+          {!branding?.hideLogo && logoSrc ? (
+            /* Custom logo present: show full wordmark logo, no org name text */
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
-              src={logoSrc || "/icon.png"}
-              alt=""
-              className="h-7 w-7 object-contain shrink-0"
+              src={logoSrc}
+              alt={orgName || ""}
+              className="h-9 object-contain shrink-0"
             />
+          ) : (
+            /* No custom logo: fall back to org name as text */
+            <span className="font-bold text-lg leading-none truncate">
+              {orgName || "Atrium"}
+            </span>
           )}
-          <span className="font-bold text-lg leading-none truncate">
-            {orgName || "Atrium"}
-          </span>
           <div className="ml-auto flex items-center gap-1">
             <GlobalSearch iconOnly />
             <NotificationBell align="left" />
