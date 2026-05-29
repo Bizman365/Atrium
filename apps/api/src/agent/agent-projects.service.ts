@@ -13,7 +13,7 @@ export interface AgentResult<T> {
   created?: boolean;
 }
 
-const PROJECT_COMPLETED_STATUSES = new Set(["completed", "done"]);
+const PROJECT_COMPLETED_STATUSES = new Set(["complete", "completed", "done"]);
 
 @Injectable()
 export class AgentProjectsService {
