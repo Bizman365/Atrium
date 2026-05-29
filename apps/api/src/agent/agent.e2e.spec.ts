@@ -31,6 +31,7 @@ describe("Agent API e2e", () => {
       createdById: null,
     });
     db.projectStatuses.push({ organizationId: orgId, slug: "not_started" });
+    db.projectStatuses.push({ organizationId: orgId, slug: "complete" });
     db.members.push({ organizationId: orgId, userId: "user_1" });
 
     const moduleRef = await Test.createTestingModule({ imports: [AgentModule] })
@@ -90,8 +91,23 @@ describe("Agent API e2e", () => {
     const deliverableCreate = await request(`/api/agent/tasks/${taskBody.data.id}/deliverables`, "POST", {
       title: "Build doc",
       url: "https://example.com/build-doc",
+      externalId: "deliverable:build-doc",
     });
     expect(deliverableCreate.status).toBe(201);
+    const deliverableBody = await deliverableCreate.json();
+    expect(deliverableBody.data.externalId).toBe("deliverable:build-doc");
+    expect(deliverableBody.data.source).toBe("agent");
+    expect(db.auditEvents.length).toBe(4);
+
+    const deliverableRetry = await request(`/api/agent/tasks/${taskBody.data.id}/deliverables`, "POST", {
+      title: "Build doc mutated",
+      url: "https://example.com/build-doc-mutated",
+      externalId: "deliverable:build-doc",
+    });
+    expect(deliverableRetry.status).toBe(200);
+    const deliverableRetryBody = await deliverableRetry.json();
+    expect(deliverableRetryBody.data.id).toBe(deliverableBody.data.id);
+    expect(deliverableRetryBody.meta.auditEventId).toBeNull();
     expect(db.auditEvents.length).toBe(4);
 
     const audit = await request("/api/agent/audit", "GET");
@@ -186,6 +202,7 @@ class FakePrisma {
   file = { findFirst: async () => null };
 
   taskDeliverable = {
+    findFirst: async ({ where }: any) => this.taskDeliverables.find((deliverable) => matches(deliverable, where)) ?? null,
     create: async ({ data }: any) => {
       const deliverable = withTimestamps({ id: `deliverable_${this.taskDeliverables.length + 1}`, ...data });
       this.taskDeliverables.push(deliverable);

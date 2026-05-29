@@ -320,6 +320,8 @@ model TaskDeliverable {
   type           String    @default("link")
   fileId         String?
   url            String?
+  externalId     String?
+  source         String?
   clientVisible  Boolean   @default(true)
   createdById    String?
   createdAt      DateTime  @default(now())
@@ -333,6 +335,7 @@ model TaskDeliverable {
   @@index([taskId])
   @@index([organizationId])
   @@index([fileId])
+  @@unique([organizationId, externalId])
   @@map("task_deliverable")
 }
 

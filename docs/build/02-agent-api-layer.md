@@ -110,12 +110,12 @@ All paths below are under the global `/api` prefix.
 | Method | Path | Scope | Behavior |
 |---|---|---|---|
 | `POST` | `/api/agent/projects` | `projects:write` | Create project, idempotent by org-scoped `externalId`. |
-| `PATCH` | `/api/agent/projects/:id` | `projects:write` | Update project fields; stamps `completedAt` on transition to `completed`/`done`. |
+| `PATCH` | `/api/agent/projects/:id` | `projects:write` | Update project fields; stamps `completedAt` on transition to `complete`/`completed`/`done`. |
 | `GET` | `/api/agent/projects` | `projects:read` | List projects with `clientId`, `status`, `slug`, `limit`, `cursor`. |
 | `GET` | `/api/agent/projects/:id` | `projects:read` | Fetch one project with task counts grouped by status. |
 | `POST` | `/api/agent/tasks` | `tasks:write` | Create task, idempotent by org-scoped `externalId`, auto-orders per project. |
 | `PATCH` | `/api/agent/tasks/:id` | `tasks:write` | Update task fields; stamps `completedAt` on transition to `done`. |
-| `POST` | `/api/agent/tasks/:id/deliverables` | `deliverables:write` | Attach a URL/file deliverable to a task. |
+| `POST` | `/api/agent/tasks/:id/deliverables` | `deliverables:write` | Attach a URL/file deliverable to a task; idempotent by org-scoped `externalId`. |
 | `GET` | `/api/agent/audit` | `audit:read` | List recent audit events with filters and cursor pagination. |
 
 ### Response examples
@@ -187,6 +187,36 @@ Audit metadata always includes:
 }
 ```
 
+
+### PXL-16 bug fixes
+
+#### Project completion auto-stamp
+
+PXL-7 CSP backfill exposed that projects using the production `project_status.slug = "complete"` did not receive `completedAt`; tasks did because their terminal status is `done`. The schema has no terminal-status flag on `ProjectStatus`, so PXL-16 uses the explicit slug set:
+
+```ts
+const PROJECT_COMPLETED_STATUSES = new Set(["complete", "completed", "done"]);
+```
+
+Existing CSP backfill rows were deliberately **not** re-stamped in this PR because PXL-16 was instructed not to touch PXL-7 backfill data. The fix applies to new project creates and future status transitions.
+
+#### Deliverable idempotency
+
+PXL-7 also exposed duplicate `task_deliverable` rows when `POST /api/agent/tasks/:id/deliverables` was retried. PXL-16 adds the same idempotency pattern used by projects/tasks:
+
+- `TaskDeliverable.externalId` and `TaskDeliverable.source` fields.
+- Unique org-scoped constraint: `task_deliverable_organizationId_externalId_key`.
+- Existing-row lookup before create when `externalId` is present.
+- `source = "agent"` set by the service for agent-created deliverables.
+- No audit event on idempotent retry.
+- P2002 unique races mapped to `409 Conflict`.
+
+Migration:
+
+```text
+20260529124500_add_deliverable_externalid_source
+```
+
 ## 5. How to Extend
 
 ### Add a new agent endpoint
@@ -250,10 +280,10 @@ bun run --filter @atrium/api test src/agent
 Result:
 
 ```text
-7 pass
+9 pass
 0 fail
-24 expect() calls
-Ran 7 tests across 2 files. [396.00ms]
+36 expect() calls
+Ran 9 tests across 3 files. [613.00ms]
 ```
 
 Covered:
@@ -264,7 +294,8 @@ Covered:
 - Revoked token returns 401.
 - Missing Authorization header returns 401.
 - `lastUsedAt` debounce skips writes inside 60 seconds.
-- E2E happy path: project create, idempotent project retry, task create, task done patch, deliverable create, audit list.
+- Unit coverage: project create/update with `status="complete"` stamps `completedAt`.
+- E2E happy path: project create, idempotent project retry, task create, task done patch, deliverable create, idempotent deliverable retry, audit list.
 
 ### Full API test suite
 
@@ -277,10 +308,10 @@ bun run --filter @atrium/api test
 Result:
 
 ```text
-682 pass
+684 pass
 0 fail
-1115 expect() calls
-Ran 682 tests across 39 files. [12.18s]
+1127 expect() calls
+Ran 684 tests across 40 files. [12.54s]
 ```
 
 ### E2E assertions from `agent.e2e.spec.ts`
@@ -292,7 +323,8 @@ POST /api/agent/projects -> 201, auditEventId audit_1, auditEvents length 1
 POST same externalId -> 200, auditEvents length remains 1
 POST /api/agent/tasks -> 201, auditEventId audit_2
 PATCH /api/agent/tasks/:id status=done -> 200, completedAt set, audit action status_changed
-POST /api/agent/tasks/:id/deliverables -> 201, auditEvents length 4
+POST /api/agent/tasks/:id/deliverables with externalId -> 201, source agent, auditEvents length 4
+POST same deliverable externalId -> 200, same row ID, auditEventId null, auditEvents length remains 4
 GET /api/agent/audit -> 200, returned 4 audit events
 ```
 
@@ -311,6 +343,40 @@ Implemented all eight authorized endpoints:
 8. GET   /api/agent/audit
 ```
 
+
+
+### PXL-16 migration verification
+
+Command:
+
+```bash
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -X
+```
+
+Result:
+
+```text
+migration_name                                  | applied
+------------------------------------------------+---------
+20260529124500_add_deliverable_externalid_source | t
+
+column_name | data_type | is_nullable
+------------+-----------+------------
+externalId  | text      | YES
+source      | text      | YES
+
+conname                                          | contype
+-------------------------------------------------+--------
+task_deliverable_organizationId_externalId_key   | u
+```
+
+Neon safety branch created before migration deploy:
+
+```text
+pre-pxl-16-fix-2026-05-29
+br-jolly-morning-aqckfyub
+```
+
 ## 7. Known Gaps / Deferred
 
 - **Rate limiting per API key** — global throttling still exists, but there is no per-key quota/bucket yet.
@@ -323,6 +389,7 @@ Implemented all eight authorized endpoints:
 ## 8. References
 
 - Linear issue: [PXL-5 — Build Pexlo Portal AI agent/tool service-account API](https://linear.app/mastermind365/issue/PXL-5/build-pexlo-portal-ai-agent-tool-service-account-api)
+- Linear issue: PXL-16 — Fix agent API completedAt + deliverable idempotency bugs
 - Linear project: <https://linear.app/mastermind365/project/pexlo-portal-ai-agent-projecttask-layer-c4a2bf078e60>
 - Schema foundation doc: [`docs/build/01-schema-foundation.md`](./01-schema-foundation.md)
 - Branch: `feat/pxl-5a-agent-schema`
