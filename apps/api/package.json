@@ -7,9 +7,10 @@
     "dev": "nest start --watch",
     "start": "node dist/main",
     "start:prod": "node dist/main",
-    "test": "bun test",
+    "test": "set -a; [ -f ../../packages/database/.env.test ] && . ../../packages/database/.env.test; set +a; if [ \"${DATABASE_URL:-}\" != \"$TEST_DATABASE_URL\" ]; then bun run ../../scripts/preflight-tests.ts; else echo \"✅ Pre-flight already passed; DATABASE_URL is TEST_DATABASE_URL for test process.\"; fi && DATABASE_URL=\"$TEST_DATABASE_URL\" DIRECT_URL=\"$TEST_DATABASE_URL\" bun test",
     "lint": "eslint src/",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo"
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "db:test:reset": "set -a; [ -f ../../packages/database/.env.test ] && . ../../packages/database/.env.test; set +a; bun run ../../scripts/reset-test-db.ts"
   },
   "dependencies": {
     "@atrium/database": "workspace:*",

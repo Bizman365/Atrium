@@ -106,6 +106,10 @@ bunx prisma migrate status --schema prisma/schema.prisma
 
 For shared/prod-like Neon, deploy with `migrate deploy`, not a dev reset. If Prisma asks to reset the schema, stop. That is drift, not permission to wipe data.
 
+### Test database isolation rule
+
+Tests must never use production `DATABASE_URL`. The repo now has a long-lived Neon `test` branch, `TEST_DATABASE_URL`, package-script preflight checks, and Bun test preload guards. Use the documented pattern in [`05-test-isolation.md`](./05-test-isolation.md) before running any test command.
+
 ### Agent mutation rule
 
 Every agent/API-key write should write an `AuditEvent`. At minimum:
@@ -164,6 +168,7 @@ Migration history:
 - Soft delete is not added to Project/Task yet.
 - `ActivityLog` still exists alongside `AuditEvent`; it has not been deprecated or migrated.
 - `apps/api` lint script references `eslint`, which is not installed/found. This is tracked separately as PXL-14.
+- Test database isolation is now mandatory. Direct `bun test` without `TEST_DATABASE_URL` aborts; see `05-test-isolation.md`.
 - The repo still has internal `atrium` package names. User-facing branding is Pexlo Portal, but package rename is not part of this build.
 
 ## 10. References
@@ -177,3 +182,4 @@ Migration history:
 - R&D research notes: `/Users/bizman247/.openclaw/workspace/memory/research/rd-tax-credit-program-2026-05-29.md`
 - Schema commit: `89c98ca`
 - Baseline/drift-fix commit: `6632593`
+- Test isolation build doc: `docs/build/05-test-isolation.md`
