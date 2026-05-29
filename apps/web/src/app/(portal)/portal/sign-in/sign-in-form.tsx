@@ -111,7 +111,7 @@ export function ClientPortalSignInForm() {
             <button
               type="submit"
               disabled={loading !== null}
-              className="w-full bg-pexlo-terracotta px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-white transition hover:bg-pexlo-terracotta-deep disabled:opacity-60"
+              className="w-full bg-pexlo-terracotta px-5 py-3 text-sm font-semibold uppercase tracking-[0.18em] text-pexlo-on-terracotta transition hover:bg-pexlo-terracotta-deep disabled:opacity-60"
             >
               {loading === "magic" ? "Sending…" : "Send magic link"}
             </button>

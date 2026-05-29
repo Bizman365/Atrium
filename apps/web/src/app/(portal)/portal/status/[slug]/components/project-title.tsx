@@ -23,7 +23,7 @@ export function ProjectTitle({
   return (
     <section className="py-14 sm:py-20">
       <div className="flex flex-wrap items-center gap-3">
-        <span className="rounded-full border border-pexlo-terracotta-deep/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-pexlo-terracotta-deep">
+        <span className="rounded-full border border-pexlo-terracotta-subtle px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-pexlo-terracotta-deep">
           {statusLabel(status)}
         </span>
         <span className="text-sm text-pexlo-ink-soft">
