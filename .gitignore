@@ -24,3 +24,6 @@ e2e/e2e/
 .vercel
 .env.test
 packages/database/.env.test
+
+# Secrets staging — never commit
+.secrets-staging/

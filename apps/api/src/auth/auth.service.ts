@@ -85,6 +85,12 @@ export class AuthService {
               useSecureCookies: secureCookies,
             },
           }),
+      socialProviders: {
+        google: {
+          clientId: this.config.getOrThrow("GOOGLE_CLIENT_ID"),
+          clientSecret: this.config.getOrThrow("GOOGLE_CLIENT_SECRET"),
+        },
+      },
       emailAndPassword: {
         enabled: true,
         minPasswordLength: 8,

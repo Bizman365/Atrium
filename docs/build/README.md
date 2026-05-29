@@ -10,9 +10,10 @@
 | 00 | [Architecture Overview](./00-architecture-overview.md) | ✅ Current | — |
 | 01 | [Schema Foundation](./01-schema-foundation.md) | ✅ Current | [PXL-4](https://linear.app/mastermind365/issue/PXL-4/audit-existing-pexlo-portal-projecttask-schema-identify-gaps), [PXL-5](https://linear.app/mastermind365/issue/PXL-5/build-pexlo-portal-ai-agent-tool-service-account-api) |
 | 02 | [Agent API Layer](./02-agent-api-layer.md) | ✅ Current | [PXL-5](https://linear.app/mastermind365/issue/PXL-5/build-pexlo-portal-ai-agent-tool-service-account-api) |
-| 03 | Client Portal View | 📋 Backlog | PXL-6 |
+| 03 | [Client Portal View](./03-client-portal-view.md) | ✅ Current | [PXL-6](https://linear.app/mastermind365/issue/PXL-6/build-read-only-client-portal-view-at-clientsclientslug) |
 | 04 | CSP Backfill | 📋 Backlog | PXL-7 |
 | 05 | [Test Database Isolation](./05-test-isolation.md) | ✅ Current | [PXL-17](https://linear.app/mastermind365/issue/PXL-17) |
+| 07 | [Agent Comments, Updates, Notes](./07-agent-comments-updates-notes.md) | ✅ Current | [PXL-19](https://linear.app/mastermind365/issue/PXL-19) |
 | 99 | Operational Runbook | 📋 Backlog | — |
 
 ## Linear Project
@@ -34,11 +35,13 @@ Each build doc follows the same shape:
 
 ## Current Build Sequence
 
-The first three docs establish the foundation for the Pexlo Portal AI-agent project/task layer:
+The first product docs establish the foundation for the Pexlo Portal AI-agent project/task layer:
 
 - `00-architecture-overview.md` explains the system: what already existed from Atrium, what Pexlo is adding, and which operating principles apply to future work.
 - `01-schema-foundation.md` records the PXL-4 audit and PXL-5a schema migration/drift fix: what was missing, why the migration had to be baselined, and how to safely extend the database without creating fresh drift.
 - `02-agent-api-layer.md` records the PXL-5b API layer: API-key auth, scoped agent endpoints, idempotent writes, audit events, tests, and the manual key-creation CLI.
+- `03-client-portal-view.md` records the PXL-6 client-facing status view: Better Auth magic link + Google OAuth, tenant-scoped access checks, editorial Pexlo UI, and manual client invite flow.
 - `05-test-isolation.md` records the PXL-17 safety fix: long-lived Neon `test` branch, preflight guards, direct `bun test` preload guard, reset script, and production-data verification.
+- `07-agent-comments-updates-notes.md` records the PXL-19 extension: agent comments, project updates, internal notes, client-visible rendering, and CSP demo backfill.
 
 Do not close future PXL implementation issues as Done until the relevant build doc is created or updated in this directory and committed with the code.
