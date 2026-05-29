@@ -11,6 +11,19 @@
   --muted-foreground: #737373;
   --border: #e5e5e5;
   --radius: 0.5rem;
+
+  /* Pexlo editorial brand — light mode */
+  --pexlo-paper: #fafaf7;
+  --pexlo-panel: #ffffff;
+  --pexlo-ink: #1a1a1a;
+  --pexlo-ink-soft: #6b6b6b;
+  --pexlo-hairline: #e5e0d8;
+  --pexlo-hairline-soft: #eeeae3;
+  --pexlo-terracotta: #c85a38;
+  --pexlo-terracotta-deep: #a85436;
+  --pexlo-terracotta-subtle: #e6c8bd;
+  --pexlo-accent: #d63e1f;
+  --pexlo-on-terracotta: #ffffff;
 }
 
 .dark {
@@ -19,6 +32,19 @@
   --muted: #1a1a1a;
   --muted-foreground: #a3a3a3;
   --border: #262626;
+
+  /* Pexlo editorial brand — dark mode */
+  --pexlo-paper: #1a1612;
+  --pexlo-panel: #211c17;
+  --pexlo-ink: #f0ede6;
+  --pexlo-ink-soft: #8a857c;
+  --pexlo-hairline: #2d2823;
+  --pexlo-hairline-soft: #363027;
+  --pexlo-terracotta: #d9694a;
+  --pexlo-terracotta-deep: #b5654a;
+  --pexlo-terracotta-subtle: #4b3028;
+  --pexlo-accent: #e04e2e;
+  --pexlo-on-terracotta: #1a1612;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -28,6 +54,19 @@
     --muted: #1a1a1a;
     --muted-foreground: #a3a3a3;
     --border: #262626;
+
+    /* Pexlo editorial brand — dark mode */
+    --pexlo-paper: #1a1612;
+    --pexlo-panel: #211c17;
+    --pexlo-ink: #f0ede6;
+    --pexlo-ink-soft: #8a857c;
+    --pexlo-hairline: #2d2823;
+    --pexlo-hairline-soft: #363027;
+    --pexlo-terracotta: #d9694a;
+    --pexlo-terracotta-deep: #b5654a;
+    --pexlo-terracotta-subtle: #4b3028;
+    --pexlo-accent: #e04e2e;
+    --pexlo-on-terracotta: #1a1612;
   }
 }
 

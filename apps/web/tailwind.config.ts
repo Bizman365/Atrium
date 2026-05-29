@@ -7,13 +7,17 @@ const config: Config = {
     extend: {
       colors: {
         pexlo: {
-          terracotta: "#C85A38",
-          "terracotta-deep": "#A85436",
-          accent: "#D63E1F",
-          paper: "#FAFAF7",
-          ink: "#1A1A1A",
-          "ink-soft": "#6B6B6B",
-          hairline: "#E5E0D8",
+          terracotta: "var(--pexlo-terracotta)",
+          "terracotta-deep": "var(--pexlo-terracotta-deep)",
+          "terracotta-subtle": "var(--pexlo-terracotta-subtle)",
+          accent: "var(--pexlo-accent)",
+          paper: "var(--pexlo-paper)",
+          panel: "var(--pexlo-panel)",
+          ink: "var(--pexlo-ink)",
+          "ink-soft": "var(--pexlo-ink-soft)",
+          hairline: "var(--pexlo-hairline)",
+          "hairline-soft": "var(--pexlo-hairline-soft)",
+          "on-terracotta": "var(--pexlo-on-terracotta)",
         },
       },
       fontFamily: {

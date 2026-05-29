@@ -19,11 +19,11 @@ export function CommentsList({ comments, title = "Pexlo Team Notes" }: { comment
   if (comments.length === 0) return null;
 
   return (
-    <section className="mt-6 rounded-2xl border border-pexlo-hairline bg-white/35 p-5">
+    <section className="mt-6 rounded-2xl border border-pexlo-hairline bg-pexlo-panel p-5">
       <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-pexlo-ink-soft">{title}</p>
       <ul className="mt-4 space-y-4">
         {comments.map((comment) => (
-          <li key={comment.id} className="border-t border-pexlo-hairline/70 pt-4 first:border-t-0 first:pt-0">
+          <li key={comment.id} className="border-t border-pexlo-hairline-soft pt-4 first:border-t-0 first:pt-0">
             <div className="flex flex-wrap items-center gap-2 text-xs text-pexlo-ink-soft">
               <span className="font-semibold text-pexlo-ink">{authorName(comment.authorId)}</span>
               <span aria-hidden="true">·</span>
