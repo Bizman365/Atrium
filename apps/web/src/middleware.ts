@@ -16,14 +16,12 @@ export function middleware(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const name = hostname(host);
 
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-pathname", request.nextUrl.pathname);
-
   if (!MAIN_DOMAIN || name === hostname(MAIN_DOMAIN) || LOOPBACK_HOSTS.has(name)) {
-    return NextResponse.next({ request: { headers: requestHeaders } });
+    return NextResponse.next();
   }
 
   // Custom domain: inject header so server components can read it
+  const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-custom-host", name);
   return NextResponse.next({ request: { headers: requestHeaders } });
 }

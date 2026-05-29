@@ -23,7 +23,7 @@ describe("Agent API e2e", () => {
       name: "Omni Agent",
       keyHash: hashApiKey(rawToken),
       keyPrefix: apiKeyDisplayPrefix(rawToken),
-      scopes: ["projects:write", "projects:read", "tasks:write", "tasks:read", "deliverables:write", "audit:read"],
+      scopes: ["projects:write", "projects:read", "tasks:write", "deliverables:write", "audit:read"],
       lastUsedAt: null,
       revokedAt: null,
       createdAt: new Date(),
@@ -94,45 +94,10 @@ describe("Agent API e2e", () => {
     expect(deliverableCreate.status).toBe(201);
     expect(db.auditEvents.length).toBe(4);
 
-    const commentCreate = await request("/api/agent/comments", "POST", {
-      taskId: taskBody.data.id,
-      body: "Wired and verified.",
-      externalId: "comment:1",
-    });
-    expect(commentCreate.status).toBe(201);
-    const commentRetry = await request("/api/agent/comments", "POST", {
-      taskId: taskBody.data.id,
-      body: "Duplicate body ignored.",
-      externalId: "comment:1",
-    });
-    expect(commentRetry.status).toBe(200);
-
-    const updateCreate = await request("/api/agent/project-updates", "POST", {
-      projectId,
-      title: "Phase 1 complete",
-      body: "Agent endpoints are online.",
-      externalId: "update:1",
-    });
-    expect(updateCreate.status).toBe(201);
-
-    const noteCreate = await request("/api/agent/project-notes", "POST", {
-      projectId,
-      body: "Internal implementation note.",
-      externalId: "note:1",
-    });
-    expect(noteCreate.status).toBe(201);
-
-    const commentsList = await request(`/api/agent/comments?taskId=${taskBody.data.id}`, "GET");
-    expect(commentsList.status).toBe(200);
-    const commentsBody = await commentsList.json();
-    expect(commentsBody.data.items.length).toBe(1);
-
-    expect(db.auditEvents.length).toBe(7);
-
     const audit = await request("/api/agent/audit", "GET");
     expect(audit.status).toBe(200);
     const auditBody = await audit.json();
-    expect(auditBody.data.items.length).toBe(7);
+    expect(auditBody.data.items.length).toBe(4);
     expect(auditBody.data.items.map((event: { action: string }) => event.action)).toContain("status_changed");
   });
 
@@ -154,9 +119,6 @@ class FakePrisma {
   projects: any[] = [];
   tasks: any[] = [];
   taskDeliverables: any[] = [];
-  comments: any[] = [];
-  projectUpdates: any[] = [];
-  projectNotes: any[] = [];
   auditEvents: any[] = [];
   members: any[] = [];
   projectStatuses: any[] = [];
@@ -224,59 +186,10 @@ class FakePrisma {
   file = { findFirst: async () => null };
 
   taskDeliverable = {
-    findFirst: async ({ where }: any) => this.taskDeliverables.find((deliverable) => matches(deliverable, where)) ?? null,
     create: async ({ data }: any) => {
       const deliverable = withTimestamps({ id: `deliverable_${this.taskDeliverables.length + 1}`, ...data });
       this.taskDeliverables.push(deliverable);
       return deliverable;
-    },
-  };
-
-  comment = {
-    findFirst: async ({ where }: any) => this.comments.find((comment) => matches(comment, where)) ?? null,
-    findMany: async ({ where, take }: any) => this.comments.filter((comment) => matches(comment, where)).slice(0, take),
-    create: async ({ data }: any) => {
-      const comment = withTimestamps({ id: `comment_${this.comments.length + 1}`, ...data });
-      this.comments.push(comment);
-      return comment;
-    },
-    update: async ({ where, data }: any) => {
-      const comment = this.comments.find((item) => item.id === where.id);
-      if (!comment) throw new Error("missing comment");
-      Object.assign(comment, data, { updatedAt: new Date() });
-      return comment;
-    },
-  };
-
-  projectUpdate = {
-    findFirst: async ({ where }: any) => this.projectUpdates.find((update) => matches(update, where)) ?? null,
-    findMany: async ({ where, take }: any) => this.projectUpdates.filter((update) => matches(update, where)).slice(0, take),
-    create: async ({ data }: any) => {
-      const update = withTimestamps({ id: `project_update_${this.projectUpdates.length + 1}`, ...data });
-      this.projectUpdates.push(update);
-      return update;
-    },
-    update: async ({ where, data }: any) => {
-      const update = this.projectUpdates.find((item) => item.id === where.id);
-      if (!update) throw new Error("missing project update");
-      Object.assign(update, data, { updatedAt: new Date() });
-      return update;
-    },
-  };
-
-  projectNote = {
-    findFirst: async ({ where }: any) => this.projectNotes.find((note) => matches(note, where)) ?? null,
-    findMany: async ({ where, take }: any) => this.projectNotes.filter((note) => matches(note, where)).slice(0, take),
-    create: async ({ data }: any) => {
-      const note = withTimestamps({ id: `project_note_${this.projectNotes.length + 1}`, ...data });
-      this.projectNotes.push(note);
-      return note;
-    },
-    update: async ({ where, data }: any) => {
-      const note = this.projectNotes.find((item) => item.id === where.id);
-      if (!note) throw new Error("missing project note");
-      Object.assign(note, data, { updatedAt: new Date() });
-      return note;
     },
   };
 

@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SignOutButton } from "./sign-out-button";
@@ -62,18 +62,6 @@ export default async function PortalLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const headersList = await headers();
-  const pathname = headersList.get("x-pathname") || "";
-  const isClientAuthSurface =
-    pathname.startsWith("/portal/status") ||
-    pathname.startsWith("/status") ||
-    pathname.startsWith("/portal/sign-in") ||
-    pathname.startsWith("/sign-in");
-
-  if (isClientAuthSurface) {
-    return <>{children}</>;
-  }
-
   const [session, branding, orgName] = await Promise.all([
     getSession(),
     getBranding(),

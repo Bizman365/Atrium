@@ -71,7 +71,6 @@
       "name": "@atrium/web",
       "version": "1.3.2",
       "dependencies": {
-        "@atrium/database": "workspace:*",
         "@atrium/shared": "workspace:*",
         "autoprefixer": "^10.4.24",
         "class-variance-authority": "^0.7.1",

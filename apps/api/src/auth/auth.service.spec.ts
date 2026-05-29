@@ -14,8 +14,6 @@ const mockConfig = {
   }),
   getOrThrow: mock((key: string) => {
     if (key === "BETTER_AUTH_SECRET") return "x".repeat(32);
-    if (key === "GOOGLE_CLIENT_ID") return "test-google-client-id";
-    if (key === "GOOGLE_CLIENT_SECRET") return "test-google-client-secret";
     throw new Error(`Missing ${key}`);
   }),
 };
