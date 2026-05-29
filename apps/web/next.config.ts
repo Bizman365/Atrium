@@ -11,7 +11,9 @@ if (existsSync(changelogSrc)) {
 }
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // Standalone output is required for the unified Docker image.
+  // Disable only when explicitly building for Vercel (VERCEL=1 set automatically by Vercel).
+  ...(process.env.VERCEL === "1" ? {} : { output: "standalone" as const }),
   transpilePackages: ["@atrium/shared"],
   images: {
     unoptimized: true, // CVE-2026-27980: disable image optimization (not used in this app)

@@ -34,7 +34,7 @@ export function StepComplete({ onBack }: StepCompleteProps) {
         </div>
         <h2 className="text-xl font-semibold">You are all set!</h2>
         <p className="text-sm text-[var(--muted-foreground)] mt-2 max-w-md mx-auto">
-          Your Atrium instance is configured and ready to use. You can always
+          Your Pexlo Portal is configured and ready to use. You can always
           adjust these settings later from the dashboard.
         </p>
       </div>

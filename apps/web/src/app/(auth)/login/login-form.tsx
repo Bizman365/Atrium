@@ -77,7 +77,7 @@ export function LoginForm({ orgName, logoSrc, hideLogo }: LoginFormProps) {
             </div>
           )}
           <h1 className="text-2xl font-bold">
-            {orgName ? `Sign in to ${orgName}` : "Sign in to Atrium"}
+            {orgName ? `Sign in to ${orgName}` : "Sign in to Pexlo Portal"}
           </h1>
           <p className="text-[var(--muted-foreground)] mt-2">
             Enter your credentials to continue

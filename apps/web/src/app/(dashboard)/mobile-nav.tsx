@@ -46,17 +46,18 @@ export function MobileNav({ logoSrc, orgName, hideLogo }: MobileNavProps) {
         >
           <Menu size={20} />
         </button>
-        {!hideLogo && (
+        {!hideLogo && logoSrc ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
-            src={logoSrc || "/icon.png"}
-            alt=""
-            className="h-6 w-6 object-contain shrink-0"
+            src={logoSrc}
+            alt={orgName || ""}
+            className="h-7 object-contain shrink-0"
           />
+        ) : (
+          <span className="font-bold text-sm truncate">
+            {orgName || "Pexlo Portal"}
+          </span>
         )}
-        <span className="font-bold text-sm truncate">
-          {orgName || "Atrium"}
-        </span>
         <div className="ml-auto flex items-center gap-1">
           <GlobalSearch iconOnly />
           <NotificationBell align="left" />
@@ -79,17 +80,18 @@ export function MobileNav({ logoSrc, orgName, hideLogo }: MobileNavProps) {
       >
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2.5">
-            {!hideLogo && (
+            {!hideLogo && logoSrc ? (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
-                src={logoSrc || "/icon.png"}
-                alt=""
-                className="h-7 w-7 object-contain shrink-0"
+                src={logoSrc}
+                alt={orgName || ""}
+                className="h-9 object-contain shrink-0"
               />
+            ) : (
+              <span className="font-bold text-lg leading-none truncate">
+                {orgName || "Pexlo Portal"}
+              </span>
             )}
-            <span className="font-bold text-lg leading-none truncate">
-              {orgName || "Atrium"}
-            </span>
           </div>
           <button
             onClick={() => setOpen(false)}

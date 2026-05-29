@@ -8,7 +8,7 @@ COPY apps/api/package.json ./apps/api/
 COPY packages/database/package.json ./packages/database/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/email/package.json ./packages/email/
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Build
 FROM base AS build
