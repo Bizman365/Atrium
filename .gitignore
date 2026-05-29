@@ -22,3 +22,5 @@ public_empty/
 e2e/e2e/
 .worktrees/
 .vercel
+.env.test
+packages/database/.env.test

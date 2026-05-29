@@ -63,6 +63,26 @@ bun run dev
 
 This starts the web app at [localhost:3000](http://localhost:3000) and the API at [localhost:3001](http://localhost:3001). The `setup` script handles env files, database, and seed data automatically.
 
+### ⚠️ Test Database Safety
+
+Tests must never run against production data. This repo requires a separate `TEST_DATABASE_URL` and aborts test execution when it is missing.
+
+```bash
+# Local-only secret file; do not commit real credentials
+cp .env.test.example packages/database/.env.test
+# Fill TEST_DATABASE_URL with a Neon branch named "test"
+
+# Safe test commands source packages/database/.env.test, run preflight,
+# then force DATABASE_URL/DIRECT_URL to the test database.
+bun run test
+bun run --filter @atrium/api test
+
+# Reset test data while keeping schema + _prisma_migrations
+bun run db:test:reset
+```
+
+Direct `bun test` is also guarded through `bunfig.toml`; without `TEST_DATABASE_URL`, it exits before test code runs. Full rationale and verification: [`docs/build/05-test-isolation.md`](docs/build/05-test-isolation.md).
+
 ### Docker (Production)
 
 A pre-built image is available on Docker Hub:
