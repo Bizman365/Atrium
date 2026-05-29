@@ -342,7 +342,6 @@ model TaskDeliverable {
   @@index([taskId])
   @@index([organizationId])
   @@index([fileId])
-  @@unique([organizationId, externalId])
   @@map("task_deliverable")
 }
 
