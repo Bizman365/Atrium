@@ -9,7 +9,7 @@
 |---|---|---|---|
 | 00 | [Architecture Overview](./00-architecture-overview.md) | ✅ Current | — |
 | 01 | [Schema Foundation](./01-schema-foundation.md) | ✅ Current | [PXL-4](https://linear.app/mastermind365/issue/PXL-4/audit-existing-pexlo-portal-projecttask-schema-identify-gaps), [PXL-5](https://linear.app/mastermind365/issue/PXL-5/build-pexlo-portal-ai-agent-tool-service-account-api) |
-| 02 | Agent API Layer | 🚧 Pending | [PXL-5](https://linear.app/mastermind365/issue/PXL-5/build-pexlo-portal-ai-agent-tool-service-account-api) |
+| 02 | [Agent API Layer](./02-agent-api-layer.md) | ✅ Current | [PXL-5](https://linear.app/mastermind365/issue/PXL-5/build-pexlo-portal-ai-agent-tool-service-account-api) |
 | 03 | Client Portal View | 📋 Backlog | PXL-6 |
 | 04 | CSP Backfill | 📋 Backlog | PXL-7 |
 | 99 | Operational Runbook | 📋 Backlog | — |
@@ -33,9 +33,10 @@ Each build doc follows the same shape:
 
 ## Current Build Sequence
 
-The first two docs establish the foundation for the Pexlo Portal AI-agent project/task layer:
+The first three docs establish the foundation for the Pexlo Portal AI-agent project/task layer:
 
 - `00-architecture-overview.md` explains the system: what already existed from Atrium, what Pexlo is adding, and which operating principles apply to future work.
 - `01-schema-foundation.md` records the PXL-4 audit and PXL-5a schema migration/drift fix: what was missing, why the migration had to be baselined, and how to safely extend the database without creating fresh drift.
+- `02-agent-api-layer.md` records the PXL-5b API layer: API-key auth, scoped agent endpoints, idempotent writes, audit events, tests, and the manual key-creation CLI.
 
 Do not close future PXL implementation issues as Done until the relevant build doc is created or updated in this directory and committed with the code.
