@@ -25,6 +25,16 @@ export class CreateAgentDeliverableDto {
   @MaxLength(50)
   type?: string;
 
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  externalId?: string;
+
+  @IsString()
+  @IsOptional()
+  @MaxLength(50)
+  source?: string;
+
   @IsBoolean()
   @IsOptional()
   clientVisible?: boolean;
