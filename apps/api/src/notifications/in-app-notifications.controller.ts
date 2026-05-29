@@ -4,41 +4,57 @@ import {
   Patch,
   Param,
   Query,
-  Req,
+  UseGuards,
 } from "@nestjs/common";
+import { AuthGuard, CurrentOrg, CurrentUser } from "../common";
 import { InAppNotificationsService } from "./in-app-notifications.service";
 import { ListNotificationsDto } from "./in-app-notifications.dto";
 
 @Controller("notifications")
+@UseGuards(AuthGuard)
 export class InAppNotificationsController {
   constructor(private readonly inApp: InAppNotificationsService) {}
 
   @Get()
-  list(@Query() dto: ListNotificationsDto, @Req() req: any) {
+  list(
+    @Query() dto: ListNotificationsDto,
+    @CurrentUser("id") userId: string,
+    @CurrentOrg("id") orgId: string,
+  ) {
     return this.inApp.findByUser(
-      req.user.id,
-      req.organization.id,
+      userId,
+      orgId,
       dto.page,
       dto.limit,
     );
   }
 
   @Get("unread-count")
-  async unreadCount(@Req() req: any) {
+  async unreadCount(
+    @CurrentUser("id") userId: string,
+    @CurrentOrg("id") orgId: string,
+  ) {
     const count = await this.inApp.unreadCount(
-      req.user.id,
-      req.organization.id,
+      userId,
+      orgId,
     );
     return { count };
   }
 
   @Patch("read-all")
-  markAllRead(@Req() req: any) {
-    return this.inApp.markAllRead(req.user.id, req.organization.id);
+  markAllRead(
+    @CurrentUser("id") userId: string,
+    @CurrentOrg("id") orgId: string,
+  ) {
+    return this.inApp.markAllRead(userId, orgId);
   }
 
   @Patch(":id/read")
-  markRead(@Param("id") id: string, @Req() req: any) {
-    return this.inApp.markRead(id, req.user.id, req.organization.id);
+  markRead(
+    @Param("id") id: string,
+    @CurrentUser("id") userId: string,
+    @CurrentOrg("id") orgId: string,
+  ) {
+    return this.inApp.markRead(id, userId, orgId);
   }
 }

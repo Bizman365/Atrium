@@ -29,9 +29,9 @@ export function TelemetryConsentBanner() {
   return (
     <div className="mb-6 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 flex flex-col sm:flex-row sm:items-center gap-3">
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-[var(--foreground)]">Help improve Atrium</p>
+        <p className="text-sm font-medium text-[var(--foreground)]">Help improve Pexlo Portal</p>
         <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
-          Share anonymous crash reports and error data with the Atrium team to help us fix bugs and improve the product. No personal data or client information is ever included.
+          Share anonymous crash reports and error data with Pexlo to help us fix bugs and improve the product. No personal data or client information is ever included.
         </p>
       </div>
       <div className="flex gap-2 shrink-0">

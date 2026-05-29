@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 export const PRESET_COLORS = [
   { hex: "#ef4444", name: "Red" },
   { hex: "#3b82f6", name: "Blue" },
-  { hex: "#006b68", name: "Atrium" },
+  { hex: "#C85A38", name: "Pexlo" },
   { hex: "#22c55e", name: "Green" },
   { hex: "#f59e0b", name: "Amber" },
   { hex: "#8b5cf6", name: "Violet" },

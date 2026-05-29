@@ -5,7 +5,7 @@ export default function PublicChangelogPage() {
   return (
     <div className="min-h-screen bg-[var(--background)]">
       <header className="border-b border-[var(--border)] px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="font-bold text-lg">Atrium</Link>
+        <Link href="/" className="font-bold text-lg">Pexlo Portal</Link>
         <Link
           href="/login"
           className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
