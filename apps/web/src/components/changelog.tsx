@@ -50,7 +50,7 @@ export function Changelog() {
   return (
     <div className="max-w-2xl">
       <h1 className="text-xl font-bold mb-1">Changelog</h1>
-      <p className="text-sm text-[var(--muted-foreground)] mb-6">What&apos;s new in Atrium</p>
+      <p className="text-sm text-[var(--muted-foreground)] mb-6">What&apos;s new in Pexlo Portal</p>
 
       {sections.length === 0 && (
         <p className="text-sm text-[var(--muted-foreground)]">No changelog available.</p>
