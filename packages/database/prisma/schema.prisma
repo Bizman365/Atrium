@@ -28,6 +28,8 @@ model User {
   tasksRequested     Task[]              @relation("TaskRequester")
   tasksAssigned      Task[]              @relation("TaskAssignee")
   timeEntries        TimeEntry[]
+  apiKeysCreated     ApiKey[]
+  taskDeliverablesCreated TaskDeliverable[]
 
   @@map("user")
 }
@@ -96,6 +98,9 @@ model Organization {
   subscription   Subscription?
   labels         Label[]
   timeEntries    TimeEntry[]
+  apiKeys        ApiKey[]
+  taskDeliverables TaskDeliverable[]
+  auditEvents    AuditEvent[]
 
   @@map("organization")
 }
@@ -135,6 +140,27 @@ model Invitation {
 
 // ─── Application tables ───
 
+model ApiKey {
+  id             String    @id @default(cuid())
+  organizationId String
+  name           String
+  keyHash        String    @unique
+  keyPrefix      String
+  scopes         String[]
+  lastUsedAt     DateTime?
+  revokedAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdById    String?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdBy    User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([keyHash])
+  @@map("api_key")
+}
+
 model Project {
   id             String    @id @default(cuid())
   name           String
@@ -146,6 +172,10 @@ model Project {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   archivedAt     DateTime?
+  slug           String?
+  completedAt    DateTime?
+  externalId     String?
+  source         String?
 
   hourlyRateCents Int?
 
@@ -160,6 +190,8 @@ model Project {
   labels      ProjectLabel[]
   timeEntries TimeEntry[]
 
+  @@unique([organizationId, slug])
+  @@unique([organizationId, externalId])
   @@index([organizationId])
   @@map("project")
 }
@@ -207,6 +239,7 @@ model File {
   invoices         Invoice[]         @relation("UploadedInvoiceFile")
   documentVersions DocumentVersion[]
   labels           FileLabel[]
+  taskDeliverables TaskDeliverable[]
 
   @@index([projectId])
   @@index([organizationId])
@@ -250,6 +283,10 @@ model Task {
   type           String    @default("checkbox") // "checkbox" | "decision"
   question       String?
   closedAt       DateTime?
+  completedAt    DateTime?
+  externalId     String?
+  source         String?
+  clientVisible  Boolean   @default(true)
   projectId      String
   organizationId String
   createdAt      DateTime  @default(now())
@@ -263,13 +300,40 @@ model Task {
   comments    Comment[]
   labels      TaskLabel[]
   timeEntries TimeEntry[]
+  deliverables TaskDeliverable[]
 
+  @@unique([organizationId, externalId])
   @@index([projectId])
   @@index([organizationId])
   @@index([projectId, status])
   @@index([requestedById])
   @@index([assigneeId])
   @@map("task")
+}
+
+model TaskDeliverable {
+  id             String    @id @default(cuid())
+  taskId         String
+  organizationId String
+  title          String
+  description    String?
+  type           String    @default("link")
+  fileId         String?
+  url            String?
+  clientVisible  Boolean   @default(true)
+  createdById    String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  task         Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  file         File?        @relation(fields: [fileId], references: [id], onDelete: SetNull)
+  createdBy    User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([taskId])
+  @@index([organizationId])
+  @@index([fileId])
+  @@map("task_deliverable")
 }
 
 model DecisionOption {
@@ -678,6 +742,27 @@ model PushSubscription {
   @@unique([userId, endpoint])
   @@index([userId, organizationId])
   @@map("push_subscription")
+}
+
+model AuditEvent {
+  id             String    @id @default(cuid())
+  organizationId String
+  entityType     String
+  entityId       String
+  action         String
+  actorType      String
+  actorId        String?
+  source         String?
+  before         Json?
+  after          Json?
+  metadata       Json?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, entityType, entityId, createdAt])
+  @@index([organizationId, createdAt])
+  @@map("audit_event")
 }
 
 model ActivityLog {
