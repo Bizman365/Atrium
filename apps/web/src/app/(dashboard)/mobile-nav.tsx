@@ -7,6 +7,7 @@ import { SidebarNav } from "./sidebar-nav";
 import { SignOutButton } from "./sign-out-button";
 import { NotificationBell } from "@/components/notification-bell";
 import { GlobalSearch } from "@/components/global-search";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface MobileNavProps {
   logoSrc: string | null;
@@ -61,6 +62,7 @@ export function MobileNav({ logoSrc, orgName, hideLogo }: MobileNavProps) {
         <div className="ml-auto flex items-center gap-1">
           <GlobalSearch iconOnly />
           <NotificationBell align="left" />
+          <ThemeToggle />
         </div>
       </div>
 
@@ -93,13 +95,16 @@ export function MobileNav({ logoSrc, orgName, hideLogo }: MobileNavProps) {
               </span>
             )}
           </div>
-          <button
-            onClick={() => setOpen(false)}
-            className="p-1.5 rounded-lg hover:bg-[var(--muted)]"
-            aria-label="Close menu"
-          >
-            <X size={18} />
-          </button>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <button
+              onClick={() => setOpen(false)}
+              className="p-1.5 rounded-lg hover:bg-[var(--muted)]"
+              aria-label="Close menu"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
         <SidebarNav onNavigate={() => setOpen(false)} />
         <div className="mt-auto pt-4">

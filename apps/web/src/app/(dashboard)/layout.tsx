@@ -8,6 +8,7 @@ import { MobileNav } from "./mobile-nav";
 import { NotificationBell } from "@/components/notification-bell";
 import { GlobalSearch } from "@/components/global-search";
 import { DynamicFavicon } from "@/components/dynamic-favicon";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { DEFAULT_BRANDING } from "@atrium/shared";
 
 const API_URL = process.env.API_URL || "http://localhost:3001";
@@ -169,6 +170,7 @@ export default async function DashboardLayout({
           <div className="ml-auto flex items-center gap-1">
             <GlobalSearch iconOnly />
             <NotificationBell align="left" />
+            <ThemeToggle />
           </div>
         </div>
         <SidebarNav />
