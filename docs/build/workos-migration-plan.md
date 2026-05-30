@@ -196,10 +196,16 @@ All three values are already in Keychain ready to copy.
 9. Update `apps/api/src/notifications/in-app-notifications.controller.ts` AuthGuard to work with WorkOS sessions
 10. Test build locally
 
-### Phase 3 — Data migration (15 min)
-1. Map existing `chris@pexlo.com` user → WorkOS via WorkOS Users API (creates new WorkOS user, links to existing Prisma user via `workosUserId`)
-2. Map Pexlo organization → WorkOS Organization
-3. (Skip for v1: bulk migrate other test users — they'll re-onboard via WorkOS on next login)
+### Phase 3 — Data migration (15 min) — DONE Sat 12:03 EDT
+1. [x] Map existing `chris@pexlo.com` user → WorkOS via WorkOS Users API.
+   - Correction: WorkOS user already existed from Magic Auth smoke test, so we updated it instead of creating a duplicate.
+   - WorkOS user: `user_01KSWMJYFTSCJHWXNC9BPP6F64`
+   - Prisma user: `2ZYf1yUNuUbPPwfKw1EV92GVh4zwJQsC`
+2. [x] Map Pexlo organization → WorkOS Organization.
+   - Default WorkOS test org could not be renamed (`403 Default test organizations cannot be updated.`)
+   - Created real org: `Pexlo Internal` / `org_01KSWT043W6RSEGS9H3Y6GEGZM`
+   - Added active admin membership: `om_01KSWT04A6KN45N3W37Q2RGNGV`
+3. [x] Skip v1 bulk migration of other test users — they'll re-onboard via WorkOS on next login.
 
 ### Phase 4 — Deploy + verify (30 min)
 1. Build new image on Hetzner with PXL-18 entrypoint discipline (SKIP_DB_PUSH=true first boot, then false)
@@ -223,7 +229,7 @@ Each gate is "stop and verify before proceeding":
 - **Gate A** (after Phase 0): WorkOS Keychain entries set ✅, Neon safety branch ✅, git tag ✅, Hetzner image tag (Crank), Hetzner .env updated (Crank), Chris dashboard prep done (2 redirect URIs + Magic Auth toggle). Stop, confirm to Omni. (Google OAuth step removed — deferred to v2.)
 - **Gate B** (after Phase 1): Prisma migration row exists. New column `User.workosUserId` exists. Production data row counts UNCHANGED.
 - **Gate C** (after Phase 2 local build): `bun run build` passes. No TypeScript errors. No "Better Auth" imports remaining in API code.
-- **Gate D** (after Phase 3): chris@pexlo.com row has `workosUserId` populated.
+- **Gate D** (after Phase 3): chris@pexlo.com row has `workosUserId` populated. ✅ Sat 12:03 EDT: `user.workosUserId = user_01KSWMJYFTSCJHWXNC9BPP6F64`; row counts unchanged.
 - **Gate E** (after Phase 4 first boot SKIP_DB_PUSH=true): Container Up. Production DB row counts UNCHANGED.
 - **Gate F** (after Phase 4 second boot): Magic link flow works end-to-end. Status URL renders for authenticated user.
 - **Gate G** (after Phase 5): Build doc committed. PXL-6 closed in Linear.
