@@ -20,13 +20,18 @@ export class CreateDocumentDto {
   projectId!: string;
 
   @IsString()
-  @IsIn(["quote", "contract", "proposal", "nda", "other"])
+  @IsIn(["quote", "contract", "proposal", "nda", "other", "attachment"])
   type!: string;
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
   title!: string;
+
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === "true" || value === true)
+  notifyClient?: boolean;
 
   @IsOptional()
   @IsBoolean()

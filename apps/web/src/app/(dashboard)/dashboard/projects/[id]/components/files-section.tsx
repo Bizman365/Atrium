@@ -211,6 +211,7 @@ export function FilesSection({
   const [expiresInDays, setExpiresInDays] = useState<number | "">("");
   const [reminderEnabled, setReminderEnabled] = useState(false);
   const [reminderIntervalDays, setReminderIntervalDays] = useState(3);
+  const [notifyClient, setNotifyClient] = useState(false);
 
   const loadDocuments = useCallback(async () => {
     try {
@@ -229,6 +230,20 @@ export function FilesSection({
   }, [loadDocuments]);
 
   const isPdf = docFile?.type === "application/pdf";
+  const isAttachment = docType === "attachment";
+  const showSignatureOptions = !isAttachment && isPdf;
+  const showAdvancedOptions = !isAttachment;
+
+  useEffect(() => {
+    if (!isAttachment) return;
+    setRequiresSignature(false);
+    setRequiresApproval(false);
+    setExpiresInDays("");
+    setReminderEnabled(false);
+    setDocQuestion("");
+    setDocChoices([]);
+    setShowAdvanced(false);
+  }, [isAttachment]);
 
   const handleFileSelect = (file: File | null) => {
     setDocFile(file);
@@ -252,6 +267,7 @@ export function FilesSection({
     setExpiresInDays("");
     setReminderEnabled(false);
     setReminderIntervalDays(3);
+    setNotifyClient(false);
   };
 
   const handleFileDownload = async (fileId: string, filename: string) => {
@@ -379,7 +395,7 @@ export function FilesSection({
   };
 
   // --- Document handlers ---
-  const handleDocUpload = async (andSend: boolean) => {
+  const handleDocUpload = async () => {
     if (!docFile || !docTitle.trim()) return;
     setDocUploading(true);
     try {
@@ -388,17 +404,18 @@ export function FilesSection({
       formData.append("projectId", projectId);
       formData.append("type", docType);
       formData.append("title", docTitle);
-      if (requiresSignature) formData.append("requiresSignature", "true");
-      if (requiresApproval) formData.append("requiresApproval", "true");
-      const validChoices = docChoices.map((c) => c.trim()).filter(Boolean);
-      if (validChoices.length > 0) {
+      formData.append("notifyClient", notifyClient ? "true" : "false");
+      if (!isAttachment && requiresSignature) formData.append("requiresSignature", "true");
+      if (!isAttachment && requiresApproval) formData.append("requiresApproval", "true");
+      const validChoices = isAttachment ? [] : docChoices.map((c) => c.trim()).filter(Boolean);
+      if (!isAttachment && validChoices.length > 0) {
         // Store as "question|choice1,choice2,choice3"
         const optionsStr = docQuestion.trim()
           ? `${docQuestion.trim()}|${validChoices.join(",")}`
           : validChoices.join(",");
         formData.append("options", optionsStr);
       }
-      if (reminderEnabled) {
+      if (!isAttachment && reminderEnabled) {
         formData.append("reminderEnabled", "true");
         formData.append("reminderIntervalDays", String(reminderIntervalDays));
       }
@@ -407,16 +424,16 @@ export function FilesSection({
         body: formData,
       });
       track("document_uploaded", { type: docType });
-      if (andSend) {
+      if (notifyClient) {
         const sendBody: Record<string, unknown> = {};
-        if (expiresInDays && typeof expiresInDays === "number") sendBody.expiresInDays = expiresInDays;
+        if (!isAttachment && expiresInDays && typeof expiresInDays === "number") sendBody.expiresInDays = expiresInDays;
         await apiFetch(`/documents/${doc.id}/send`, { method: "POST", body: JSON.stringify(sendBody) });
       }
       setShowDocUpload(false);
       resetDocForm();
       loadDocuments();
-      success(andSend ? "Document uploaded and sent" : "Document saved as draft");
-      if (requiresSignature && isPdf) setPlacerDocId(doc.id);
+      success(notifyClient ? "Document uploaded and client notified" : "Document saved to project");
+      if (!isAttachment && requiresSignature && isPdf) setPlacerDocId(doc.id);
     } catch (err) {
       showError(err instanceof Error ? err.message : "Failed to upload document");
     } finally {
@@ -950,6 +967,7 @@ export function FilesSection({
                   <option value="proposal">Proposal</option>
                   <option value="nda">NDA</option>
                   <option value="other">Other</option>
+                  <option value="attachment">Attachment</option>
                 </select>
               </div>
               <div>
@@ -969,16 +987,22 @@ export function FilesSection({
                 )}
               </div>
             </div>
-            {isPdf && (
+            {showSignatureOptions && (
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={requiresSignature} onChange={(e) => { setRequiresSignature(e.target.checked); if (e.target.checked) setRequiresApproval(false); }} className="accent-[var(--primary)]" />
                 <span className="text-sm">Collect signature</span>
               </label>
             )}
-            <button onClick={() => setShowAdvanced(!showAdvanced)} className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center gap-1 transition-colors">
-              {showAdvanced ? <ChevronDown size={14} /> : <ChevronRight size={14} />} Advanced options
-            </button>
-            {showAdvanced && (
+            {isAttachment ? (
+              <p className="text-sm text-[var(--muted-foreground)] rounded-lg border border-[var(--border)] px-3 py-2">
+                Attachments are saved to the project for reference.
+              </p>
+            ) : (
+              <button onClick={() => setShowAdvanced(!showAdvanced)} className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] flex items-center gap-1 transition-colors">
+                {showAdvanced ? <ChevronDown size={14} /> : <ChevronRight size={14} />} Advanced options
+              </button>
+            )}
+            {showAdvancedOptions && showAdvanced && (
               <div className="space-y-2.5 pl-5 border-l-2 border-[var(--border)]">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={requiresApproval} onChange={(e) => { setRequiresApproval(e.target.checked); if (e.target.checked) setRequiresSignature(false); }} className="accent-[var(--primary)]" />
@@ -1056,12 +1080,31 @@ export function FilesSection({
                 </div>
               </div>
             )}
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[var(--border)]">
+            <label className="flex items-start gap-2 cursor-pointer pt-2 border-t border-[var(--border)] mt-2">
+              <input
+                type="checkbox"
+                checked={notifyClient}
+                onChange={(e) => setNotifyClient(e.target.checked)}
+                className="mt-0.5 accent-[var(--primary)]"
+              />
+              <div className="flex-1">
+                <span className="text-sm font-medium text-[var(--foreground)]">Send notification to client</span>
+                <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+                  {notifyClient
+                    ? "Client will be notified via email and see this in their portal immediately."
+                    : "Client will not be notified. File saves to the project for internal reference."}
+                </p>
+              </div>
+            </label>
+            <div className="flex items-center justify-end gap-2">
               <button onClick={() => { setShowDocUpload(false); resetDocForm(); }} className="px-4 py-1.5 border border-[var(--border)] rounded-lg text-sm hover:bg-[var(--muted)]">Cancel</button>
-              <button onClick={() => handleDocUpload(false)} disabled={docUploading || !docTitle.trim() || !docFile} className="px-4 py-1.5 border border-[var(--border)] rounded-lg text-sm hover:bg-[var(--muted)] disabled:opacity-40">Save Draft</button>
-              <button onClick={() => handleDocUpload(true)} disabled={docUploading || !docTitle.trim() || !docFile} className="px-4 py-1.5 bg-[var(--primary)] text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50">{docUploading ? "Uploading..." : "Upload & Send"}</button>
+              <button onClick={handleDocUpload} disabled={docUploading || !docTitle.trim() || !docFile} className="px-4 py-1.5 bg-[var(--primary)] text-white rounded-lg text-sm hover:opacity-90 disabled:opacity-50">
+                {docUploading ? "Uploading..." : notifyClient ? "Save & Notify Client" : "Save to Project"}
+              </button>
             </div>
-            <p className="text-[11px] text-[var(--muted-foreground)] text-right -mt-2">Sending notifies the client immediately.</p>
+            {notifyClient && (
+              <p className="text-[11px] text-[var(--muted-foreground)] text-right -mt-2">Sending notifies the client immediately.</p>
+            )}
           </div>
         </div>
       )}
