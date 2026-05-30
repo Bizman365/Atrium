@@ -266,8 +266,8 @@ export class SettingsService {
         await resend.emails.send({
           from: emailConfig.from,
           to: recipientEmail,
-          subject: "Atrium - Test Email",
-          html: `<p>This is a test email from Atrium to verify your email configuration is working correctly.</p><p>If you received this, your email settings are configured properly.</p>`,
+          subject: "Pexlo Portal - Test Email",
+          html: `<p>This is a test email from Pexlo Portal to verify your email configuration is working correctly.</p><p>If you received this, your email settings are configured properly.</p>`,
         });
       } else if (emailConfig.provider === "smtp") {
         const nodemailer = await import("nodemailer");
@@ -286,8 +286,8 @@ export class SettingsService {
         await transporter.sendMail({
           from: emailConfig.from,
           to: recipientEmail,
-          subject: "Atrium - Test Email",
-          html: `<p>This is a test email from Atrium to verify your email configuration is working correctly.</p><p>If you received this, your email settings are configured properly.</p>`,
+          subject: "Pexlo Portal - Test Email",
+          html: `<p>This is a test email from Pexlo Portal to verify your email configuration is working correctly.</p><p>If you received this, your email settings are configured properly.</p>`,
         });
       }
 

@@ -175,7 +175,7 @@ export async function safeFetch(
         redirect: "manual",
         headers: {
           Accept: accept,
-          "User-Agent": "AtriumLinkPreview/1.0 (+https://atrium.app)",
+          "User-Agent": "PexloPortalLinkPreview/1.0 (+https://portal.pexlo.com)",
         },
       });
     } finally {
