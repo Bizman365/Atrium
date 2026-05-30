@@ -14,7 +14,7 @@ function hostname(host: string): string {
 }
 
 export async function middleware(request: NextRequest) {
-  const authkitResult = await authkit(request);
+  const authkitResult = await authkit(request, { debug: false });
   const { requestHeaders, responseHeaders } = partitionAuthkitHeaders(
     request,
     authkitResult.headers,
