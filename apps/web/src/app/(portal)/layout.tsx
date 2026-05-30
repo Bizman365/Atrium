@@ -101,6 +101,16 @@ export default async function PortalLayout({
     redirect("/portal/sign-in");
   }
 
+  // Role-based routing: owners and admins belong in /dashboard (full sidebar +
+  // admin tools). The /portal surface is for clients/members. Mirrors the
+  // inverse check in (dashboard)/layout.tsx that bounces members to /portal.
+  // Anyone arriving via post-auth handleAuth() landing, a bookmark, or a deep
+  // link gets routed correctly here.
+  const role = session.member?.role;
+  if (role === "owner" || role === "admin") {
+    redirect("/dashboard");
+  }
+
   const logoSrc = getLogoSrc(branding);
 
   return (
