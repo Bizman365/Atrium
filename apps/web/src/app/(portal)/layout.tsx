@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { SignOutButton } from "./sign-out-button";
 import { getSession } from "@/lib/auth";
+import { safeJson } from "@/lib/safe-fetch";
 import { NotificationBell } from "@/components/notification-bell";
 import { DynamicFavicon } from "@/components/dynamic-favicon";
 import { PreviewModeProvider } from "@/lib/preview-mode";
@@ -12,7 +13,16 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 const API_URL = process.env.API_URL || "http://localhost:3001";
 
-async function getBranding() {
+interface BrandingResponse {
+  logoKey?: string;
+  logoUrl?: string;
+  organizationId?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  hideLogo?: boolean;
+}
+
+async function getBranding(): Promise<BrandingResponse | null> {
   try {
     const cookieStore = await cookies();
     const res = await fetch(
@@ -23,7 +33,7 @@ async function getBranding() {
       },
     );
     if (!res.ok) return null;
-    return res.json();
+    return await safeJson<BrandingResponse>(res);
   } catch {
     return null;
   }
@@ -40,7 +50,7 @@ async function getOrgName() {
       },
     );
     if (!res.ok) return null;
-    const org = await res.json();
+    const org = await safeJson<{ name?: string }>(res);
     return org?.name || null;
   } catch {
     return null;
@@ -88,7 +98,7 @@ export default async function PortalLayout({
     getOrgName(),
   ]);
   if (!session) {
-    redirect("/login");
+    redirect("/portal/sign-in");
   }
 
   const logoSrc = getLogoSrc(branding);

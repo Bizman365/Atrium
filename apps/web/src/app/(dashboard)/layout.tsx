@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { safeJson } from "@/lib/safe-fetch";
 import { SignOutButton } from "./sign-out-button";
 import { SidebarNav } from "./sidebar-nav";
 import { EmailVerificationBanner } from "./email-verification-banner";
@@ -25,17 +26,30 @@ async function getSessionWithRole() {
     ]);
 
     if (!sessionRes.ok) return null;
-    const session = await sessionRes.json();
+    const session = await safeJson<{
+      user?: { id?: string; email?: string; emailVerified?: boolean };
+    }>(sessionRes);
     if (!session) return null;
 
-    const member = memberRes.ok ? await memberRes.json() : null;
+    const member = memberRes.ok
+      ? await safeJson<{ role?: string }>(memberRes)
+      : null;
     return { ...session, role: member?.role || null };
   } catch {
     return null;
   }
 }
 
-async function getBranding() {
+interface BrandingResponse {
+  logoKey?: string;
+  logoUrl?: string;
+  organizationId?: string;
+  primaryColor?: string;
+  accentColor?: string;
+  hideLogo?: boolean;
+}
+
+async function getBranding(): Promise<BrandingResponse | null> {
   try {
     const cookieStore = await cookies();
     const res = await fetch(`${API_URL}/api/branding`, {
@@ -43,7 +57,7 @@ async function getBranding() {
       cache: "no-store",
     });
     if (!res.ok) return null;
-    return res.json();
+    return await safeJson<BrandingResponse>(res);
   } catch {
     return null;
   }
@@ -60,7 +74,7 @@ async function getOrgName() {
       },
     );
     if (!res.ok) return null;
-    const org = await res.json();
+    const org = await safeJson<{ name?: string }>(res);
     return org?.name || null;
   } catch {
     return null;
@@ -82,7 +96,7 @@ async function getSetupStatus() {
       cache: "no-store",
     });
     if (!res.ok) return null;
-    return res.json() as Promise<{ completed: boolean }>;
+    return await safeJson<{ completed: boolean }>(res);
   } catch {
     return null;
   }
@@ -96,7 +110,7 @@ async function getTelemetryStatus(): Promise<boolean | null> {
       cache: "no-store",
     });
     if (!res.ok) return null;
-    const settings = await res.json();
+    const settings = await safeJson<{ telemetryEnabled?: boolean }>(res);
     return settings?.telemetryEnabled ?? null;
   } catch {
     return null;
@@ -115,7 +129,7 @@ export default async function DashboardLayout({
   ]);
 
   if (!session) {
-    redirect("/login");
+    redirect("/portal/sign-in");
   }
 
   // Clients (members) should use the portal, not the dashboard
