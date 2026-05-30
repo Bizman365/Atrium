@@ -3,16 +3,8 @@ import { UnauthorizedException } from "@nestjs/common";
 import type { PrismaService } from "../prisma/prisma.service";
 import type { StorageProvider } from "../files/storage/storage.interface";
 
-// ---------------------------------------------------------------------------
-// Mock "better-auth/crypto" before importing the service
-// ---------------------------------------------------------------------------
-const mockVerifyPassword = mock(() => Promise.resolve(true));
+const mockAuthService = { verifyPasswordForUser: mock(() => Promise.resolve()) };
 
-mock.module("better-auth/crypto", () => ({
-  verifyPassword: mockVerifyPassword,
-}));
-
-// Import AFTER the module mock is registered
 import { AccountService } from "./account.service";
 
 // ---------------------------------------------------------------------------
@@ -96,7 +88,7 @@ const mockLogger = {
 // Helpers
 // ---------------------------------------------------------------------------
 function clearAllMocks() {
-  mockVerifyPassword.mockClear();
+  mockAuthService.verifyPasswordForUser.mockClear();
   mockPrisma.account.findFirst.mockClear();
   mockPrisma.member.findMany.mockClear();
   mockPrisma.member.groupBy.mockClear();
@@ -122,7 +114,7 @@ function clearAllMocks() {
   mockLogger.warn.mockClear();
 
   // Reset default implementations
-  mockVerifyPassword.mockImplementation(() => Promise.resolve(true));
+  mockAuthService.verifyPasswordForUser.mockImplementation(() => Promise.resolve());
   mockPrisma.account.findFirst.mockImplementation(() =>
     Promise.resolve({ password: "hashed-pw" }),
   );
@@ -145,6 +137,7 @@ describe("AccountService", () => {
     service = new AccountService(
       mockPrisma as unknown as PrismaService,
       mockStorage as unknown as StorageProvider,
+      mockAuthService as never,
       mockLogger as never,
     );
   });
@@ -247,8 +240,11 @@ describe("AccountService", () => {
   // deleteAccount
   // =========================================================================
   describe("deleteAccount", () => {
-    it("throws UnauthorizedException when no credential account exists", async () => {
+    it("throws UnauthorizedException when WorkOS password verification fails", async () => {
       mockPrisma.account.findFirst.mockImplementation(() => Promise.resolve(null));
+      mockAuthService.verifyPasswordForUser.mockImplementation(() =>
+        Promise.reject(new UnauthorizedException("Password verification failed.")),
+      );
 
       try {
         await service.deleteAccount("user-1", "password123");
@@ -259,9 +255,12 @@ describe("AccountService", () => {
       }
     });
 
-    it("throws UnauthorizedException when account has no password field", async () => {
+    it("propagates the same generic message when WorkOS password verification fails", async () => {
       mockPrisma.account.findFirst.mockImplementation(() =>
         Promise.resolve({ password: null }),
+      );
+      mockAuthService.verifyPasswordForUser.mockImplementation(() =>
+        Promise.reject(new UnauthorizedException("Password verification failed.")),
       );
 
       try {
@@ -277,7 +276,9 @@ describe("AccountService", () => {
       mockPrisma.account.findFirst.mockImplementation(() =>
         Promise.resolve({ password: "hashed-pw" }),
       );
-      mockVerifyPassword.mockImplementation(() => Promise.resolve(false));
+      mockAuthService.verifyPasswordForUser.mockImplementation(() =>
+        Promise.reject(new UnauthorizedException("Password verification failed.")),
+      );
 
       try {
         await service.deleteAccount("user-1", "wrong-password");
@@ -291,6 +292,9 @@ describe("AccountService", () => {
     it("uses the same generic message for missing account and wrong password (security requirement)", async () => {
       // Case 1: no account
       mockPrisma.account.findFirst.mockImplementation(() => Promise.resolve(null));
+      mockAuthService.verifyPasswordForUser.mockImplementation(() =>
+        Promise.reject(new UnauthorizedException("Password verification failed.")),
+      );
       let msg1 = "";
       try {
         await service.deleteAccount("user-1", "any");
@@ -303,9 +307,12 @@ describe("AccountService", () => {
       service = new AccountService(
         mockPrisma as unknown as PrismaService,
         mockStorage as unknown as StorageProvider,
+        mockAuthService as never,
         mockLogger as never,
       );
-      mockVerifyPassword.mockImplementation(() => Promise.resolve(false));
+      mockAuthService.verifyPasswordForUser.mockImplementation(() =>
+        Promise.reject(new UnauthorizedException("Password verification failed.")),
+      );
       let msg2 = "";
       try {
         await service.deleteAccount("user-1", "wrong");

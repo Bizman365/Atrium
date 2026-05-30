@@ -4,7 +4,7 @@ import { AuthService } from "./auth.service";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthenticatedRequest, AuthSession } from "../common";
 
-export const WORKOS_SESSION_COOKIE = "wos-session";
+export const DEFAULT_WORKOS_SESSION_COOKIE = "wos-session";
 export const ACTIVE_ORG_COOKIE = "atrium-active-org";
 
 @Injectable()
@@ -21,7 +21,8 @@ export class SessionMiddleware implements NestMiddleware {
       Request;
 
     try {
-      const sessionData = req.cookies?.[WORKOS_SESSION_COOKIE];
+      const cookieName = this.authService.getWorkOSCookieName();
+      const sessionData = req.cookies?.[cookieName] ?? req.cookies?.[DEFAULT_WORKOS_SESSION_COOKIE];
       if (!sessionData) return next();
 
       const sealedSession = this.authService.workos.userManagement.loadSealedSession({
@@ -31,8 +32,13 @@ export class SessionMiddleware implements NestMiddleware {
       const workosSession = await sealedSession.authenticate();
       if (!workosSession.authenticated) return next();
 
-      const user = await this.prisma.user.findUnique({
-        where: { workosUserId: workosSession.user.id },
+      const user = await this.prisma.user.findFirst({
+        where: {
+          OR: [
+            { workosUserId: workosSession.user.id },
+            { email: workosSession.user.email },
+          ],
+        },
       });
 
       // First WorkOS sign-in before local provisioning: leave req.user unset so

@@ -16,22 +16,6 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   private workosClient: WorkOS | null = null;
 
-  /**
-   * Temporary compile-time compatibility for legacy onboarding code that still
-   * calls `auth.handler(...)`. Better Auth is intentionally gone; Phase 3/2c
-   * replaces those legacy callers with WorkOS-native provisioning flows.
-   */
-  readonly auth = {
-    handler: async (_request: globalThis.Request) =>
-      new globalThis.Response(
-        JSON.stringify({ error: "Legacy auth handler removed; use WorkOS routes" }),
-        {
-          status: 410,
-          headers: { "content-type": "application/json" },
-        },
-      ),
-  };
-
   constructor(
     private config: ConfigService,
     private prisma: PrismaService,
@@ -60,6 +44,11 @@ export class AuthService {
       );
     }
     return cookiePassword;
+  }
+
+
+  getWorkOSCookieName(): string {
+    return this.config.get<string>("WORKOS_COOKIE_NAME") || "wos-session";
   }
 
   /**

@@ -14,7 +14,7 @@ import { ConfigService } from "@nestjs/config";
 import type { Response } from "express";
 import { PrismaService } from "../prisma/prisma.service";
 import type { AuthenticatedRequest } from "../common";
-import { ACTIVE_ORG_COOKIE, WORKOS_SESSION_COOKIE } from "./session.middleware";
+import { ACTIVE_ORG_COOKIE, DEFAULT_WORKOS_SESSION_COOKIE } from "./session.middleware";
 import { AuthService } from "./auth.service";
 
 const COOKIE_OPTIONS = {
@@ -65,7 +65,7 @@ export class AuthController {
       throw new UnauthorizedException("WorkOS did not return a sealed session");
     }
 
-    res.cookie(WORKOS_SESSION_COOKIE, authentication.sealedSession, {
+    res.cookie(this.authService.getWorkOSCookieName(), authentication.sealedSession, {
       ...COOKIE_OPTIONS,
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
@@ -90,7 +90,7 @@ export class AuthController {
     return this.clearSessionAndRedirect(req, res);
   }
 
-  // Compatibility alias for existing web surfaces until Phase 2c removes Better Auth client calls.
+  // Compatibility alias for existing web surfaces until Phase 2c removes legacy client calls.
   @Post("sign-out")
   @HttpCode(HttpStatus.OK)
   signOutAlias(@Req() req: AuthenticatedRequest, @Res() res: Response) {
@@ -166,7 +166,8 @@ export class AuthController {
   }
 
   private clearSessionAndRedirect(req: AuthenticatedRequest, res: Response) {
-    res.clearCookie(WORKOS_SESSION_COOKIE, COOKIE_OPTIONS);
+    res.clearCookie(this.authService.getWorkOSCookieName(), COOKIE_OPTIONS);
+    res.clearCookie(DEFAULT_WORKOS_SESSION_COOKIE, COOKIE_OPTIONS);
     res.clearCookie(ACTIVE_ORG_COOKIE, COOKIE_OPTIONS);
 
     const sessionId = req.session?.id;

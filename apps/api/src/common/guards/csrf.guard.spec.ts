@@ -5,7 +5,7 @@ import { Reflector } from "@nestjs/core";
 
 /** A session cookie that triggers CSRF enforcement in the guard. */
 const SESSION_COOKIES = {
-  "better-auth.session_token": "test-session-value",
+  "wos-session": "test-session-value",
 };
 
 function createMockContext(
@@ -419,13 +419,13 @@ describe("CsrfGuard", () => {
 
   // --- Secure cookie variant ---
 
-  it("skips CSRF for POST when __Secure- session cookie exists but no CSRF token", () => {
+  it("skips CSRF for POST when WorkOS session cookie exists but no CSRF token", () => {
     const reflector = new Reflector();
     reflector.getAllAndOverride = () => false;
     const guard = new CsrfGuard(reflector);
     const { context } = createMockContext(
       "POST",
-      { "__Secure-better-auth.session_token": "secure-session" },
+      { "wos-session": "secure-session" },
       {},
     );
 
