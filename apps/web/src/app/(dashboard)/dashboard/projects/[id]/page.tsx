@@ -6,8 +6,9 @@ import { apiFetch } from "@/lib/api";
 import { useConfirm } from "@/components/confirm-modal";
 import { useToast } from "@/components/toast";
 import { ProjectDetailSkeleton } from "@/components/skeletons";
+import { MoreActionsMenu } from "@/components/more-actions-menu";
 import { useRouter } from "next/navigation";
-import { Archive, ArchiveRestore, Trash2, Calendar, ChevronDown, Tag, Copy } from "lucide-react";
+import { Archive, Trash2, Calendar, ChevronDown, Tag } from "lucide-react";
 import { track } from "@/lib/track";
 import { startPreview } from "@/lib/preview-mode";
 import { LabelBadge } from "@/components/label-badge";
@@ -597,36 +598,19 @@ export default function ProjectDetailPage() {
           </div>
         )}
 
-        <div className="flex items-start justify-between gap-2">
-          <h1 className="text-lg font-bold leading-tight">{project.name}</h1>
-          <div className="shrink-0 flex items-center gap-1.5">
-            {(currentRole === "owner" || currentRole === "admin") && (
-              <button
-                onClick={openDuplicateModal}
-                className="flex items-center gap-1.5 px-2.5 py-1 border border-[var(--border)] rounded-lg text-xs text-[var(--muted-foreground)] hover:bg-[var(--muted)] transition-colors"
-              >
-                <Copy size={13} />
-                Duplicate
-              </button>
-            )}
-            {isArchived ? (
-              <button
-                onClick={handleUnarchive}
-                className="flex items-center gap-1.5 px-2.5 py-1 border border-[var(--border)] rounded-lg text-xs hover:bg-[var(--muted)] transition-colors"
-              >
-                <ArchiveRestore size={13} />
-                Unarchive
-              </button>
-            ) : (
-              <button
-                onClick={handleArchive}
-                className="flex items-center gap-1.5 px-2.5 py-1 border border-[var(--border)] rounded-lg text-xs text-[var(--muted-foreground)] hover:bg-[var(--muted)] transition-colors"
-              >
-                <Archive size={13} />
-                Archive
-              </button>
-            )}
+        <div className="flex items-start gap-3">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-bold leading-tight">{project.name}</h1>
           </div>
+          {(currentRole === "owner" || currentRole === "admin") && (
+            <MoreActionsMenu
+              isArchived={isArchived}
+              isOwner={isOwner}
+              onDuplicate={openDuplicateModal}
+              onArchive={handleArchive}
+              onUnarchive={handleUnarchive}
+            />
+          )}
         </div>
         {project.description && (
           <p className="text-xs text-[var(--muted-foreground)] leading-relaxed -mt-1">
