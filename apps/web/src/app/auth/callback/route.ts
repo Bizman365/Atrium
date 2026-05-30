@@ -25,4 +25,16 @@ import { handleAuth } from "@workos-inc/authkit-nextjs";
 // Caddy routing note: /auth/callback (no /api/ prefix) routes to the
 // Next.js server (port 3000), NOT the NestJS API (port 3001). The WorkOS
 // dashboard Redirect URI must match exactly: https://portal.pexlo.com/auth/callback
-export const GET = handleAuth();
+//
+// baseURL override: handleAuth() builds the post-auth redirect from
+// request.nextUrl by default. Behind Caddy reverse-proxy, request.nextUrl
+// resolves to http://localhost:3000 (the internal Next.js URL), not the
+// public hostname. Per SDK source code:
+//   // If baseURL is provided, use it instead of request.nextUrl
+//   // This is useful if the app is being run in a container like docker where
+//   // the hostname can be different from the one in the request
+// We pass WEB_URL (already set in production env to https://portal.pexlo.com)
+// so the post-auth redirect goes to the public domain.
+const BASE_URL = process.env.WEB_URL || "http://localhost:3000";
+
+export const GET = handleAuth({ baseURL: BASE_URL });
