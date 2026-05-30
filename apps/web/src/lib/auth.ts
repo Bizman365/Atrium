@@ -11,7 +11,15 @@ export async function getSession() {
       },
     );
     if (!res.ok) return null;
-    return res.json();
+
+    // The NestJS auth.controller.ts get-session endpoint returns `null` for
+    // unauthenticated requests, which Nest serializes as a HTTP 200 with
+    // content-length: 0 (empty body). res.json() on an empty body throws
+    // SyntaxError: Unexpected EOF, which crashes the calling Server Component.
+    // Read as text first so we can distinguish empty vs JSON-null vs object.
+    const text = await res.text();
+    if (!text) return null;
+    return JSON.parse(text);
   } catch {
     return null;
   }
