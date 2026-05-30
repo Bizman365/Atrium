@@ -11,7 +11,9 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
+    "@atrium/database": "workspace:*",
     "@atrium/shared": "workspace:*",
+    "@workos-inc/authkit-nextjs": "^4.1.1",
     "autoprefixer": "^10.4.24",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -23,8 +25,7 @@
     "react-dom": "^19.0.0",
     "react-pdf": "9",
     "tailwind-merge": "^3.0.0",
-    "tailwindcss": "3",
-    "@atrium/database": "workspace:*"
+    "tailwindcss": "3"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
