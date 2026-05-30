@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { authkit, applyResponseHeaders, partitionAuthkitHeaders } from "@workos-inc/authkit-nextjs";
 
 // Derive the canonical hostname from WEB_URL (e.g. "https://app.example.com" → "app.example.com")
 const WEB_URL = process.env.WEB_URL ?? "";
@@ -12,20 +13,27 @@ function hostname(host: string): string {
   return host.includes(":") ? host.split(":")[0] : host;
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  const authkitResult = await authkit(request);
+  const { requestHeaders, responseHeaders } = partitionAuthkitHeaders(
+    request,
+    authkitResult.headers,
+  );
+
   const host = request.headers.get("host") ?? "";
   const name = hostname(host);
 
-  const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", request.nextUrl.pathname);
 
-  if (!MAIN_DOMAIN || name === hostname(MAIN_DOMAIN) || LOOPBACK_HOSTS.has(name)) {
-    return NextResponse.next({ request: { headers: requestHeaders } });
+  if (MAIN_DOMAIN && name !== hostname(MAIN_DOMAIN) && !LOOPBACK_HOSTS.has(name)) {
+    // Custom domain: inject header so server components can read it
+    requestHeaders.set("x-custom-host", name);
   }
 
-  // Custom domain: inject header so server components can read it
-  requestHeaders.set("x-custom-host", name);
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  return applyResponseHeaders(
+    NextResponse.next({ request: { headers: requestHeaders } }),
+    responseHeaders,
+  );
 }
 
 export const config = {

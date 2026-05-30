@@ -1,25 +1,22 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Source_Serif_4 } from "next/font/google";
-import { ClientPortalSignInForm } from "./sign-in-form";
-
-const sourceSerif = Source_Serif_4({
-  subsets: ["latin"],
-  variable: "--font-pexlo-serif",
-  display: "swap",
-});
+import { redirect } from "next/navigation";
+import { getSignInUrl } from "@workos-inc/authkit-nextjs";
 
 export const metadata: Metadata = {
   title: "Client sign in",
   robots: { index: false, follow: false },
 };
 
-export default function SignInPage() {
-  return (
-    <div className={sourceSerif.variable}>
-      <Suspense fallback={null}>
-        <ClientPortalSignInForm />
-      </Suspense>
-    </div>
-  );
+function safeCallback(raw?: string): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/portal";
+  return raw;
+}
+
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl } = await searchParams;
+  redirect(await getSignInUrl({ returnTo: safeCallback(callbackUrl) }));
 }

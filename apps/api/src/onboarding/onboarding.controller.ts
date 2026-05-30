@@ -2,13 +2,12 @@ import {
   Body,
   Controller,
   Post,
-  Res,
   BadRequestException,
 } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import { ConfigService } from "@nestjs/config";
 import { InjectPinoLogger, PinoLogger } from "nestjs-pino";
-import { Response } from "express";
+import { randomUUID } from "node:crypto";
 import { render } from "@react-email/render";
 import { WelcomeEmail } from "@atrium/email";
 import { Public } from "../common";
@@ -16,6 +15,7 @@ import { AuthService } from "../auth/auth.service";
 import { BillingService } from "../billing/billing.service";
 import { MailService } from "../mail/mail.service";
 import { SignupDto } from "./signup.dto";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Controller("onboarding")
 @Public()
@@ -25,6 +25,7 @@ export class OnboardingController {
     private billingService: BillingService,
     private config: ConfigService,
     private mail: MailService,
+    private prisma: PrismaService,
     @InjectPinoLogger(OnboardingController.name)
     private readonly logger: PinoLogger,
   ) {}
@@ -33,48 +34,25 @@ export class OnboardingController {
   @Throttle({ default: { ttl: 60000, limit: parseInt(process.env.SIGNUP_THROTTLE_LIMIT || "5", 10) } })
   async signup(
     @Body() body: SignupDto,
-    @Res({ passthrough: true }) res: Response,
   ) {
-    const baseUrl = this.config.get(
-      "BETTER_AUTH_URL",
-      "http://localhost:3001",
-    );
-
-    // 1. Create user via Better Auth
-    const signupReq = new globalThis.Request(
-      `${baseUrl}/api/auth/sign-up/email`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Origin: baseUrl,
-        },
-        body: JSON.stringify({
-          name: body.name,
-          email: body.email,
-          password: body.password,
-        }),
-      },
-    );
-
-    const signupRes = await this.authService.auth.handler(signupReq);
-
-    if (!signupRes.ok) {
-      const err: Record<string, unknown> = await signupRes.json().catch(() => ({}));
+    let workosUser;
+    try {
+      const [firstName, ...lastNameParts] = body.name.trim().split(/\s+/);
+      workosUser = await this.authService.workos.userManagement.createUser({
+        email: body.email,
+        password: body.password,
+        firstName: firstName || undefined,
+        lastName: lastNameParts.length > 0 ? lastNameParts.join(" ") : undefined,
+        emailVerified: false,
+      });
+    } catch (err) {
       this.logger.error(
-        { status: signupRes.status, error: err.message, code: err.code },
-        "Better Auth signup failed",
+        { err: err instanceof Error ? err.message : String(err) },
+        "WorkOS signup failed",
       );
-      throw new BadRequestException(
-        (err.message as string) || "Signup failed",
-      );
+      throw new BadRequestException("Signup failed");
     }
 
-    // 2. Extract session cookies from signup response
-    const setCookies = signupRes.headers.getSetCookie?.() ?? [];
-    const cookieStr = setCookies.map((c) => c.split(";")[0]).join("; ");
-
-    // 3. Create organization using the new session
     const baseSlug = body.orgName
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
@@ -86,78 +64,40 @@ export class OnboardingController {
     const suffix = Math.random().toString(36).substring(2, 8);
     const slug = `${baseSlug}-${suffix}`;
 
-    const orgReq = new globalThis.Request(
-      `${baseUrl}/api/auth/organization/create`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Origin: baseUrl,
-          Cookie: cookieStr,
+    const { organization } = await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.create({
+        data: {
+          id: randomUUID(),
+          workosUserId: workosUser.id,
+          name: body.name,
+          email: body.email,
+          emailVerified: false,
         },
-        body: JSON.stringify({ name: body.orgName, slug }),
-      },
-    );
+      });
 
-    const orgRes = await this.authService.auth.handler(orgReq);
-
-    // Collect all cookies to forward
-    const allCookies = [...setCookies];
-    for (const cookie of orgRes.headers.getSetCookie?.() ?? []) {
-      allCookies.push(cookie);
-    }
-
-    if (!orgRes.ok) {
-      const orgErr = await orgRes.json().catch(() => ({}));
-      this.logger.error(
-        { status: orgRes.status, orgErr },
-        "Organization creation failed",
-      );
-      for (const cookie of allCookies) {
-        res.append("Set-Cookie", cookie);
-      }
-      res.status(207);
-      return {
-        success: false,
-        message:
-          "Account created but organization setup failed. Please sign in to continue.",
-      };
-    }
-
-    // 4. Set the new org as active
-    const orgData = await orgRes.json().catch(() => null);
-    const orgId = orgData?.id;
-    const updatedCookieStr = allCookies
-      .map((c: string) => c.split(";")[0])
-      .join("; ");
-
-    if (orgId) {
-      const setActiveReq = new globalThis.Request(
-        `${baseUrl}/api/auth/organization/set-active`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Origin: baseUrl,
-            Cookie: updatedCookieStr,
-          },
-          body: JSON.stringify({ organizationId: orgId }),
+      const organization = await tx.organization.create({
+        data: {
+          id: randomUUID(),
+          name: body.orgName,
+          slug,
         },
-      );
+      });
 
-      const setActiveRes =
-        await this.authService.auth.handler(setActiveReq);
-      for (const cookie of setActiveRes.headers.getSetCookie?.() ?? []) {
-        allCookies.push(cookie);
-      }
-    }
+      await tx.member.create({
+        data: {
+          id: randomUUID(),
+          userId: user.id,
+          organizationId: organization.id,
+          role: "owner",
+        },
+      });
 
-    // 5. Forward all cookies to client
-    for (const cookie of allCookies) {
-      res.append("Set-Cookie", cookie);
-    }
+      return { organization };
+    });
 
-    // 6. Send welcome email (fire and forget)
+    await this.authService.seedOrganizationDefaults(organization.id);
+
+    // Send welcome email (fire and forget)
     const webUrl = this.config.get("WEB_URL", "http://localhost:3000");
     render(
       WelcomeEmail({
@@ -180,14 +120,14 @@ export class OnboardingController {
         );
       });
 
-    // 7. Create checkout session for paid plans
+    // Create checkout session for paid plans
     const billingEnabled = this.config.get("BILLING_ENABLED", "false");
-    if (billingEnabled === "true" && body.planSlug && body.planSlug !== "free" && orgId) {
+    if (billingEnabled === "true" && body.planSlug && body.planSlug !== "free") {
       try {
         const successUrl = `${webUrl}/setup?checkout=success`;
         const cancelUrl = `${webUrl}/setup?checkout=cancelled`;
         const result = await this.billingService.createCheckoutSession(
-          orgId,
+          organization.id,
           body.planSlug,
           successUrl,
           cancelUrl,
@@ -195,7 +135,7 @@ export class OnboardingController {
         return { success: true, checkoutUrl: result.url };
       } catch (err) {
         this.logger.warn(
-          { err, planSlug: body.planSlug, orgId },
+          { err, planSlug: body.planSlug, orgId: organization.id },
           "Failed to create checkout session during signup, falling back to free plan",
         );
       }

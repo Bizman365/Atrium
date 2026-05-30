@@ -1,8 +1,8 @@
-import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { InjectPinoLogger, PinoLogger } from "nestjs-pino";
 import { PrismaService } from "../prisma/prisma.service";
-import { verifyPassword } from "better-auth/crypto";
 import { DELETED_USER_SENTINEL } from "@atrium/shared";
+import { AuthService } from "../auth/auth.service";
 import type { DeletionInfo } from "@atrium/shared";
 import type { StorageProvider } from "../files/storage/storage.interface";
 import { STORAGE_PROVIDER } from "../files/storage/storage.interface";
@@ -12,6 +12,7 @@ export class AccountService {
   constructor(
     private prisma: PrismaService,
     @Inject(STORAGE_PROVIDER) private storage: StorageProvider,
+    private authService: AuthService,
     @InjectPinoLogger(AccountService.name) private readonly logger: PinoLogger,
   ) {}
 
@@ -54,24 +55,8 @@ export class AccountService {
   }
 
   async deleteAccount(userId: string, password: string): Promise<void> {
-    // Verify password before proceeding
-    const account = await this.prisma.account.findFirst({
-      where: { userId, providerId: "credential" },
-      select: { password: true },
-    });
-
-    if (!account?.password) {
-      throw new UnauthorizedException("Password verification failed.");
-    }
-
-    const valid = await verifyPassword({
-      hash: account.password,
-      password,
-    });
-
-    if (!valid) {
-      throw new UnauthorizedException("Password verification failed.");
-    }
+    // Verify password against WorkOS before proceeding.
+    await this.authService.verifyPasswordForUser(userId, password);
 
     const memberships = await this.prisma.member.findMany({
       where: { userId },

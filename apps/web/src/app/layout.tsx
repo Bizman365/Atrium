@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import Link from "next/link";
 import { Providers } from "./providers";
+import { AuthKitProvider } from "@workos-inc/authkit-nextjs/components";
 // @ts-expect-error — raw string import via webpack asset/source
 import changelogRaw from "../../CHANGELOG.md";
 import "./globals.css";
@@ -94,7 +95,9 @@ export default function RootLayout({
         ))}
       </head>
       <body suppressHydrationWarning>
-        <Providers>{children}</Providers>
+        <AuthKitProvider>
+          <Providers>{children}</Providers>
+        </AuthKitProvider>
         <Link
           href="/changelog"
           className="fixed bottom-3 right-3 text-[10px] font-mono text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors opacity-50 hover:opacity-100"

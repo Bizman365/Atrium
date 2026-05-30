@@ -13,10 +13,10 @@ const CSRF_COOKIE = "csrf-token";
 const CSRF_HEADER = "x-csrf-token";
 const TOKEN_LENGTH = 32;
 
-/** Cookie names used by Better Auth for session tracking. */
+/** Cookie names used by WorkOS/AuthKit for session tracking. */
 const SESSION_COOKIE_NAMES = [
-  "better-auth.session_token",
-  "__Secure-better-auth.session_token",
+  process.env.WORKOS_COOKIE_NAME || "wos-session",
+  "wos-session",
 ];
 
 @Injectable()
@@ -51,7 +51,7 @@ export class CsrfGuard implements CanActivate {
       return true;
     }
 
-    // Skip CSRF for auth proxy routes -- Better Auth handles its own CSRF protection
+    // Skip CSRF for auth routes -- AuthKit handles its own callback protection.
     const url: string = request.originalUrl || request.url || "";
     if (url.startsWith("/api/auth/")) {
       return true;
