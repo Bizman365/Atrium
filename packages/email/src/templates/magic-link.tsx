@@ -19,11 +19,11 @@ export function MagicLinkEmail({ url, organizationName }: MagicLinkEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>Sign in to {organizationName ?? "Atrium"}</Preview>
+      <Preview>Sign in to {organizationName ?? "Pexlo Portal"}</Preview>
       <Body style={{ fontFamily: "sans-serif", padding: "40px 0" }}>
         <Container style={{ maxWidth: "480px", margin: "0 auto" }}>
           <Heading style={{ fontSize: "24px", marginBottom: "24px" }}>
-            Sign in to {organizationName ?? "Atrium"}
+            Sign in to {organizationName ?? "Pexlo Portal"}
           </Heading>
           <Text style={{ fontSize: "16px", lineHeight: "24px" }}>
             Click the link below to sign in. This link expires in 15 minutes.

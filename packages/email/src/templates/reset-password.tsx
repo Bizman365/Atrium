@@ -18,7 +18,7 @@ export function ResetPasswordEmail({ url }: ResetPasswordEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>Reset your Atrium password</Preview>
+      <Preview>Reset your Pexlo Portal password</Preview>
       <Body style={{ fontFamily: "sans-serif", padding: "40px 0" }}>
         <Container style={{ maxWidth: "480px", margin: "0 auto" }}>
           <Heading style={{ fontSize: "24px", marginBottom: "24px" }}>

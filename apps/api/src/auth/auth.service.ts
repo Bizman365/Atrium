@@ -162,7 +162,7 @@ export class AuthService {
             const organizationId = await this.getPrimaryOrgForEmail(email);
             await this.mail.send(
               email,
-              "Sign in to Atrium",
+              "Sign in to Pexlo Portal",
               html,
               organizationId,
             );
