@@ -9,6 +9,17 @@ fi
 
 echo "=== Pexlo Portal Starting ==="
 
+# Generate Prisma client at startup.
+# Bun's centralized .bun store causes prisma generate's output
+# (node_modules/.prisma/client/) to not survive the build → runner stage
+# COPY for the unified Dockerfile. Re-generating at startup ensures the
+# client + query-engine binaries land in the expected paths regardless
+# of how Docker COPY handled symlinks during the build.
+echo "[entrypoint] Generating Prisma client..."
+cd /app
+./packages/database/node_modules/.bin/prisma generate --schema=./packages/database/prisma/schema.prisma
+echo "[entrypoint] ✅ Prisma client generated."
+
 PG_RUNNING=false
 
 # Start built-in PostgreSQL if no external DATABASE_URL is provided
