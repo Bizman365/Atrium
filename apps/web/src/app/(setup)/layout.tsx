@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { safeJson } from "@/lib/safe-fetch";
 import { DEFAULT_BRANDING } from "@atrium/shared";
 
 const API_URL = process.env.API_URL || "http://localhost:3001";
@@ -14,7 +15,7 @@ async function getSessionWithRole() {
       cache: "no-store",
     });
     if (!res.ok) return null;
-    const session = await res.json();
+    const session = await safeJson(res) as { user?: unknown } | null;
     if (!session) return null;
 
     const memberRes = await fetch(
@@ -25,7 +26,7 @@ async function getSessionWithRole() {
       },
     );
     if (!memberRes.ok) return { ...session, role: null };
-    const member = await memberRes.json();
+    const member = await safeJson<{ role?: string }>(memberRes);
     return { ...session, role: member?.role || null };
   } catch {
     return null;
@@ -43,7 +44,7 @@ async function getBranding(): Promise<{
       cache: "no-store",
     });
     if (!res.ok) return null;
-    return res.json();
+    return await safeJson<{ primaryColor?: string; accentColor?: string }>(res);
   } catch {
     return null;
   }
@@ -60,7 +61,7 @@ export default async function SetupLayout({
   ]);
 
   if (!session) {
-    redirect("/login");
+    redirect("/portal/sign-in");
   }
 
   // Only owners should see the setup wizard
