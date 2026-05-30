@@ -120,6 +120,7 @@ const typeLabels: Record<string, string> = {
   proposal: "Proposal",
   nda: "NDA",
   other: "Other",
+  attachment: "Attachment",
 };
 
 import { documentStatusColors as statusColors } from "@/lib/status-colors";
